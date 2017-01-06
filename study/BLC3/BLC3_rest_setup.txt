@@ -1,0 +1,34 @@
+diff --git a/DemoSite/site/src/main/webapp/WEB-INF/applicationContext-rest-api.xml b/DemoSite/site/src/main/webapp/WEB-INF/applicationContext-rest-api.xml
+index c07b938..660e99e 100755
+--- a/DemoSite/site/src/main/webapp/WEB-INF/applicationContext-rest-api.xml
++++ b/DemoSite/site/src/main/webapp/WEB-INF/applicationContext-rest-api.xml
+@@ -30,6 +30,7 @@
+     
+     <!-- Set up Spring security for the RESTful API -->
+     <sec:http pattern="/api/**" create-session="stateless">
++		<!-- <sec:intercept-url pattern='/**' access='ROLE_REMOTE' /> -->
+         <sec:http-basic />
+         <sec:custom-filter ref="blRestPreSecurityFilterChain" before="CHANNEL_FILTER"/>
+         <sec:custom-filter ref="blRestCustomerStateFilter" after="REMEMBER_ME_FILTER"/>
+@@ -52,4 +53,4 @@
+          This MUST be marked as singleton. -->
+     <bean class="org.broadleafcommerce.core.web.api.BroadleafRestExceptionMapper" scope="singleton"/>
+     
+-</beans>
+\ No newline at end of file
++</beans>
+diff --git a/DemoSite/site/src/main/webapp/WEB-INF/web.xml b/DemoSite/site/src/main/webapp/WEB-INF/web.xml
+index c90fb4e..ab126c3 100755
+--- a/DemoSite/site/src/main/webapp/WEB-INF/web.xml
++++ b/DemoSite/site/src/main/webapp/WEB-INF/web.xml
+@@ -17,9 +17,9 @@
+             classpath:/bl-open-admin-contentClient-applicationContext.xml
+             classpath:/bl-cms-contentClient-applicationContext.xml
+             classpath:/applicationContext.xml
+-            /WEB-INF/applicationContext-rest-api.xml
+             /WEB-INF/applicationContext-datasource.xml
+             /WEB-INF/applicationContext-email.xml
++            /WEB-INF/applicationContext-rest-api.xml
+             /WEB-INF/applicationContext-security.xml
+             /WEB-INF/applicationContext-filter.xml
+             /WEB-INF/applicationContext.xml          

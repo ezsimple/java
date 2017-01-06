@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Sample">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="sampleVO" type="egovframework.example.sample.service.SampleVO"/>
+
+	<resultMap id="sample" class="egovframework.example.sample.service.SampleVO">
+		<result property="id" column="id"/>
+		<result property="upper_id" column="upper_id"/>
+		<result property="name" column="name"/>
+		<result property="description" column="description"/>
+		<result property="useYn" column="use_yn"/>
+		<result property="regUser" column="reg_user"/>
+	</resultMap>
+
+	<insert id="sampleDAO.insertSample">
+		<![CDATA[
+			INSERT INTO SAMPLE 
+				( ID
+				  , UPPER_ID
+				  , NAME
+				  , DESCRIPTION
+				  , USE_YN
+				  , REG_USER )
+			VALUES ( #id#
+				  , '*'
+				  , #name#
+				  , #description#
+				  , #useYn#
+				  , #regUser# )
+		]]>
+	</insert>
+
+	<insert id="sampleDAO.replySample">
+		<![CDATA[
+			INSERT INTO SAMPLE 
+				( ID
+				  , UPPER_ID
+				  , NAME
+				  , DESCRIPTION
+				  , USE_YN
+				  , REG_USER )
+			VALUES ( #id#
+			     , #upper_id#
+				  , #name#
+				  , #description#
+				  , #useYn#
+				  , #regUser# )
+		]]>
+	</insert>
+	
+	<update id="sampleDAO.updateSample">
+		<![CDATA[
+			UPDATE SAMPLE
+			SET ID=#id#
+				, NAME=#name#
+				, DESCRIPTION=#description#
+				, USE_YN=#useYn#
+			WHERE ID=#id#
+		]]>
+	</update>
+	
+	<delete id="sampleDAO.deleteSample">
+		<![CDATA[
+			DELETE FROM SAMPLE 
+			WHERE ID=#id# OR UPPER_ID=#id#
+		]]>
+	</delete>
+
+	<delete id="sampleDAO.deleteReplySample">
+		<![CDATA[
+			DELETE FROM SAMPLE 
+			WHERE ID=#id#
+		]]>
+	</delete>
+
+	<select id="sampleDAO.selectSample" resultMap="sample">
+		<![CDATA[
+			SELECT
+				ID, UPPER_ID, NAME, DESCRIPTION, USE_YN, REG_USER
+			FROM SAMPLE 
+			WHERE ID=#id#
+		]]>
+	</select>
+	
+	<select id="sampleDAO.selectSampleList" parameterClass="searchVO" resultClass="egovMap">
+           <![CDATA[            
+              SELECT * FROM  (
+              SELECT ROWNUM RNUM, ALL_LIST.* 
+              FROM  (
+              SELECT ID, UPPER_ID, NAME, DESCRIPTION, USE_YN, REG_USER,
+                (select count(*) from sample
+                start with upper_id = t.ID
+                connect by nocycle prior id = upper_id
+                )as reply_cnt
+              FROM SAMPLE t
+              WHERE UPPER_ID = '*'
+            ]]>
+			<isEqual prepend="AND" property="searchCondition" compareValue="0">
+				ID = #searchKeyword#
+			</isEqual>
+            <isEqual prepend="AND" property="searchCondition" compareValue="1">
+              NAME LIKE '%'||#searchKeyword#||'%'
+            </isEqual>
+              order by id desc ) ALL_LIST)
+<!--           <![CDATA[            
+              WHERE  RNUM  BETWEEN #firstIndex# + 1 
+              AND #firstIndex# + #recordCountPerPage#
+            ]]> -->
+	</select>
+	
+	<select id="sampleDAO.selectSampleListTotCnt" parameterClass="searchVO" resultClass="int">
+
+			SELECT COUNT(*) totcnt
+			FROM SAMPLE
+			WHERE UPPER_ID = '*'
+			<isEqual prepend="AND" property="searchCondition" compareValue="0">
+				ID = #searchKeyword#
+			</isEqual>
+			<isEqual prepend="AND" property="searchCondition" compareValue="1">
+				NAME LIKE '%' || #searchKeyword# || '%'
+			</isEqual>
+	</select>
+
+ 	<select id="sampleDAO.selectReplyList" parameterClass="sampleVO" resultClass="egovMap">
+           SELECT ROWNUM RNUM, ALL_LIST.*
+           FROM (
+           SELECT ID, UPPER_ID, NAME, DESCRIPTION, USE_YN, REG_USER FROM SAMPLE
+           <![CDATA[            
+           start with upper_id = #id# 
+            ]]>
+           connect by nocycle prior id = upper_id
+           order siblings by id asc) ALL_LIST
+	</select>
+
+</sqlMap>

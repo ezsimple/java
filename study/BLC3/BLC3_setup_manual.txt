@@ -1,0 +1,348 @@
+diff --git a/DemoSite/build.properties b/DemoSite/build.properties
+new file mode 100755
+index 0000000..b2d9a39
+--- /dev/null
++++ b/DemoSite/build.properties
+@@ -0,0 +1,33 @@
++########
++#The following file is used to define runtime properties that will read by ant tasks. 
++#if you need to override any of them,
++#then create a file in your home directory called .build.properties that contains only the override properties.
++#########
++
++#required
++maven.home=D:/mkeasy/workspace/apache-maven-3.0.4
++
++#optional
++#jrebel.path=D:/mkeasy/workspace/jrebel
++
++#optional for build-create-sql and build-update-sql ant tasks
++ant.hibernate.sql.ddl.dialect=org.hibernate.dialect.HSQLDialect
++
++#The following allow the build-update-sql ant task to connect to a database and generate DDL to 
++#update the schema
++ant.blPU.url=jdbc:hsqldb:hsql://localhost/broadleaf
++ant.blPU.userName=sa
++ant.blPU.password=null
++ant.blPU.driverClassName=org.hsqldb.jdbcDriver
++
++ant.blSecurePU.url=jdbc:hsqldb:hsql://localhost/broadleaf
++ant.blSecurePU.userName=sa
++ant.blSecurePU.password=null
++ant.blSecurePU.driverClassName=org.hsqldb.jdbcDriver
++
++ant.blCMSStorage.url=jdbc:hsqldb:hsql://localhost/broadleaf
++ant.blCMSStorage.userName=sa
++ant.blCMSStorage.password=null
++ant.blCMSStorage.driverClassName=org.hsqldb.jdbcDriver
++
++#End build-*-sql Ant Task Properties
+diff --git a/DemoSite/admin/pom.xml b/DemoSite/admin/pom.xml
+index d5ebfa6..5a212ef 100755
+--- a/DemoSite/admin/pom.xml
++++ b/DemoSite/admin/pom.xml
+@@ -150,6 +150,14 @@
+             <artifactId>hsqldb</artifactId>
+         </dependency>
+         <dependency>
++            <groupId>com.oracle</groupId>
++            <artifactId>ojdbc14</artifactId>
++        </dependency>
++        <dependency>
++            <groupId>mysql</groupId>
++            <artifactId>mysql-connector-java</artifactId>
++        </dependency> 
++        <dependency>
+             <groupId>org.apache.tomcat</groupId>
+             <artifactId>tomcat-jdbc</artifactId>
+         </dependency>
+diff --git a/DemoSite/admin/src/main/webapp/WEB-INF/jetty-env.xml b/DemoSite/admin/src/main/webapp/WEB-INF/jetty-env.xml
+index 03bbfe5..95873ca 100755
+--- a/DemoSite/admin/src/main/webapp/WEB-INF/jetty-env.xml
++++ b/DemoSite/admin/src/main/webapp/WEB-INF/jetty-env.xml
+@@ -13,41 +13,71 @@ IT IS NOT RECOMMENDED TO USE JETTY IN A PRODUCTION ENVIRONMENT.
+         <Arg type="java.lang.String">mycompany-admin</Arg>
+         <Arg type="boolean">true</Arg>
+     </New>
+-    
++
+     <New id="webDS" class="org.eclipse.jetty.plus.jndi.Resource">
+         <Arg>jdbc/web</Arg>
++        <!--
+         <Arg>
+             <New class="org.apache.commons.dbcp.BasicDataSource">
+-                <Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
+-                <Set name="url">jdbc:hsqldb:hsql://localhost/broadleaf</Set>
+-                <Set name="username">sa</Set>
+-                <Set name="password"></Set>
++                <Set name="driverClassName">oracle.jdbc.driver.OracleDriver</Set>
++                <Set name="url">jdbc:oracle:thin:@localhost:1521:XE</Set>
++                <Set name="username">아이디</Set>
++                <Set name="password">패스워드</Set>
+             </New>
+         </Arg>
++        -->
++         <Arg>
++             <New class="org.apache.commons.dbcp.BasicDataSource">
++                 <Set name="driverClassName">com.mysql.jdbc.Driver</Set>
++                 <Set name="url">jdbc:mysql://localhost:3306/broadleaf</Set>
++                 <Set name="username">아이디</Set>
++                 <Set name="password">패스워드</Set>
++             </New>
++         </Arg>
+     </New>
+ 
+     <New id="webSecureDS" class="org.eclipse.jetty.plus.jndi.Resource">
+         <Arg>jdbc/secure</Arg>
++        <!--
+         <Arg>
+             <New class="org.apache.commons.dbcp.BasicDataSource">
+-                <Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
+-                <Set name="url">jdbc:hsqldb:hsql://localhost/broadleaf</Set>
+-                <Set name="username">sa</Set>
+-                <Set name="password"></Set>
++                <Set name="driverClassName">oracle.jdbc.driver.OracleDriver</Set>
++                <Set name="url">jdbc:oracle:thin:@localhost:1521:XE</Set>
++                <Set name="username">아이디</Set>
++                <Set name="password">패스워드</Set>
+             </New>
+         </Arg>
++        -->
++         <Arg>
++             <New class="org.apache.commons.dbcp.BasicDataSource">
++                 <Set name="driverClassName">com.mysql.jdbc.Driver</Set>
++                 <Set name="url">jdbc:mysql://localhost:3306/broadleaf</Set>
++                 <Set name="username">아이디</Set>
++                 <Set name="password">패스워드</Set>
++             </New>
++         </Arg>
+     </New>
+ 
+     <New id="webStorageDS" class="org.eclipse.jetty.plus.jndi.Resource">
+         <Arg>jdbc/storage</Arg>
++        <!--
+         <Arg>
+             <New class="org.apache.commons.dbcp.BasicDataSource">
+-                <Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
+-                <Set name="url">jdbc:hsqldb:hsql://localhost/broadleaf</Set>
+-                <Set name="username">sa</Set>
+-                <Set name="password"></Set>
++                <Set name="driverClassName">oracle.jdbc.driver.OracleDriver</Set>
++                <Set name="url">jdbc:oracle:thin:@localhost:1521:XE</Set>
++                <Set name="username">아이디</Set>
++                <Set name="password">패스워드</Set>
+             </New>
+         </Arg>
++        -->
++         <Arg>
++             <New class="org.apache.commons.dbcp.BasicDataSource">
++                 <Set name="driverClassName">com.mysql.jdbc.Driver</Set>
++                 <Set name="url">jdbc:mysql://localhost:3306/broadleaf</Set>
++                 <Set name="username">아이디</Set>
++                 <Set name="password">패스워드</Set>
++             </New>
++         </Arg>
+     </New>
+ 
+-</Configure>
+\ No newline at end of file
++</Configure>
+diff --git a/DemoSite/admin/src/main/webapp/WEB-INF/log4j.xml b/DemoSite/admin/src/main/webapp/WEB-INF/log4j.xml
+index cc60da6..f8f9e02 100755
+--- a/DemoSite/admin/src/main/webapp/WEB-INF/log4j.xml
++++ b/DemoSite/admin/src/main/webapp/WEB-INF/log4j.xml
+@@ -3,6 +3,7 @@
+ <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+     <appender name="console" class="org.apache.log4j.ConsoleAppender">
+         <param name="Target" value="System.out" />
++        <param name="encoding" value="UTF-8" />
+         <layout class="org.apache.log4j.PatternLayout">
+             <param name="ConversionPattern" value="[%5p] %d{HH:mm:ss} %c{1} - %m%n" />
+         </layout>
+diff --git a/DemoSite/core/src/main/resources/runtime-properties/common-shared.properties b/DemoSite/core/src/main/resources/runtime-properties/common-shared.properties
+index 849fa35..494f8f6 100755
+--- a/DemoSite/core/src/main/resources/runtime-properties/common-shared.properties
++++ b/DemoSite/core/src/main/resources/runtime-properties/common-shared.properties
+@@ -61,21 +61,24 @@ store.front.webapp.prefix=http://localhost:8080/
+ 
+ # Settings for the default persistence unit
+ blPU.hibernate.hbm2ddl.auto=validate
+-blPU.hibernate.dialect=org.hibernate.dialect.HSQLDialect
++#blPU.hibernate.dialect=org.hibernate.dialect.Oracle10gDialect
++blPU.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+ blPU.hibernate.show_sql=false
+ blPU.hibernate.cache.use_second_level_cache=true
+ blPU.hibernate.cache.use_query_cache=true
+ blPU.hibernate.hbm2ddl.import_files=null
+ # Settings for the CMS storage persistence unit
+ blCMSStorage.hibernate.hbm2ddl.auto=validate
+-blCMSStorage.hibernate.dialect=org.hibernate.dialect.HSQLDialect
++#blCMSStorage.hibernate.dialect=org.hibernate.dialect.Oracle10gDialect
++blCMSStorage.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+ blCMSStorage.hibernate.show_sql=false
+ blCMSStorage.hibernate.cache.use_second_level_cache=true
+ blCMSStorage.hibernate.cache.use_query_cache=true
+ blCMSStorage.hibernate.hbm2ddl.import_files=null
+ # Settings for the secure persistence unit
+ blSecurePU.hibernate.hbm2ddl.auto=validate
+-blSecurePU.hibernate.dialect=org.hibernate.dialect.HSQLDialect
++#blSecurePU.hibernate.dialect=org.hibernate.dialect.Oracle10gDialect
++blSecurePU.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+ blSecurePU.hibernate.show_sql=false
+ blSecurePU.hibernate.cache.use_second_level_cache=false
+ blSecurePU.hibernate.cache.use_query_cache=false
+diff --git a/DemoSite/pom.xml b/DemoSite/pom.xml
+index 35c4da9..a5f4340 100755
+--- a/DemoSite/pom.xml
++++ b/DemoSite/pom.xml
+@@ -25,6 +25,10 @@
+             <name>public releases</name>
+             <url>http://nexus.broadleafcommerce.org/nexus/content/repositories/releases/</url>
+         </repository>
++   		<repository>
++			<id>mesir-repo</id>
++			<url>http://mesir.googlecode.com/svn/trunk/mavenrepo</url>
++		</repository>
+     </repositories>
+     <build>
+         <pluginManagement>
+@@ -245,6 +249,21 @@
+                 <type>jar</type>
+                 <scope>compile</scope>
+             </dependency>
++            <!-- oracle 10g driver -->
++            <dependency>
++                <groupId>com.oracle</groupId>
++                <artifactId>ojdbc14</artifactId>
++                <version>10.2.0.4.0</version>
++                <type>jar</type>
++                <scope>compile</scope>
++            </dependency> 
++            <dependency>
++                <groupId>mysql</groupId>
++                <artifactId>mysql-connector-java</artifactId>  
++                <version>5.1.21</version>
++                <type>jar</type>
++                <scope>compile</scope>
++            </dependency> 
+             <dependency>
+                 <groupId>commons-dbcp</groupId>
+                 <artifactId>commons-dbcp</artifactId>
+diff --git a/DemoSite/site/pom.xml b/DemoSite/site/pom.xml
+index 2c6866e..caa8bf9 100755
+--- a/DemoSite/site/pom.xml
++++ b/DemoSite/site/pom.xml
+@@ -122,6 +122,14 @@
+             <artifactId>hsqldb</artifactId>
+         </dependency>
+         <dependency>
++            <groupId>com.oracle</groupId>
++            <artifactId>ojdbc14</artifactId>
++        </dependency>
++        <dependency>
++            <groupId>mysql</groupId>
++            <artifactId>mysql-connector-java</artifactId>
++        </dependency> 
++        <dependency>
+             <groupId>javax.servlet</groupId>
+             <artifactId>servlet-api</artifactId>
+         </dependency>
+diff --git a/DemoSite/site/src/main/webapp/WEB-INF/jetty-env.xml b/DemoSite/site/src/main/webapp/WEB-INF/jetty-env.xml
+index 163b0e7..1c1d909 100755
+--- a/DemoSite/site/src/main/webapp/WEB-INF/jetty-env.xml
++++ b/DemoSite/site/src/main/webapp/WEB-INF/jetty-env.xml
+@@ -16,38 +16,68 @@ IT IS NOT RECOMMENDED TO USE JETTY IN A PRODUCTION ENVIRONMENT.
+     
+     <New id="webDS" class="org.eclipse.jetty.plus.jndi.Resource">
+         <Arg>jdbc/web</Arg>
++        <!--
+         <Arg>
+             <New class="org.apache.commons.dbcp.BasicDataSource">
+-                <Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
+-                <Set name="url">jdbc:hsqldb:hsql://localhost/broadleaf</Set>
+-                <Set name="username">sa</Set>
+-                <Set name="password"></Set>
++                <Set name="driverClassName">oracle.jdbc.driver.OracleDriver</Set>
++                <Set name="url">jdbc:oracle:thin:@localhost:1521:XE</Set>
++                <Set name="username">아이디</Set>
++                <Set name="password">패스워드</Set>
+             </New>
+         </Arg>
++        -->
++         <Arg>
++             <New class="org.apache.commons.dbcp.BasicDataSource">
++                 <Set name="driverClassName">com.mysql.jdbc.Driver</Set>
++                 <Set name="url">jdbc:mysql://localhost:3306/broadleaf</Set>
++                 <Set name="username">아이디</Set>
++                 <Set name="password">패스워드</Set>
++             </New>
++         </Arg>
+     </New>
+ 
+     <New id="webSecureDS" class="org.eclipse.jetty.plus.jndi.Resource">
+         <Arg>jdbc/secure</Arg>
++        <!--
+         <Arg>
+             <New class="org.apache.commons.dbcp.BasicDataSource">
+-                <Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
+-                <Set name="url">jdbc:hsqldb:hsql://localhost/broadleaf</Set>
+-                <Set name="username">sa</Set>
+-                <Set name="password"></Set>
++                <Set name="driverClassName">oracle.jdbc.driver.OracleDriver</Set>
++                <Set name="url">jdbc:oracle:thin:@localhost:1521:XE</Set>
++                <Set name="username">아이디</Set>
++                <Set name="password">패스워드</Set>
+             </New>
+         </Arg>
++        -->
++         <Arg>
++             <New class="org.apache.commons.dbcp.BasicDataSource">
++                 <Set name="driverClassName">com.mysql.jdbc.Driver</Set>
++                 <Set name="url">jdbc:mysql://localhost:3306/broadleaf</Set>
++                 <Set name="username">아이디</Set>
++                 <Set name="password">패스워드</Set>
++             </New>
++         </Arg>
+     </New>
+ 
+     <New id="webStorageDS" class="org.eclipse.jetty.plus.jndi.Resource">
+         <Arg>jdbc/storage</Arg>
++        <!--
+         <Arg>
+             <New class="org.apache.commons.dbcp.BasicDataSource">
+-                <Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
+-                <Set name="url">jdbc:hsqldb:hsql://localhost/broadleaf</Set>
+-                <Set name="username">sa</Set>
+-                <Set name="password"></Set>
++                <Set name="driverClassName">oracle.jdbc.driver.OracleDriver</Set>
++                <Set name="url">jdbc:oracle:thin:@localhost:1521:XE</Set>
++                <Set name="username">아이디</Set>
++                <Set name="password">패스워드</Set>
+             </New>
+         </Arg>
++        -->
++         <Arg>
++             <New class="org.apache.commons.dbcp.BasicDataSource">
++                 <Set name="driverClassName">com.mysql.jdbc.Driver</Set>
++                 <Set name="url">jdbc:mysql://localhost:3306/broadleaf</Set>
++                 <Set name="username">아이디</Set>
++                 <Set name="password">패스워드</Set>
++             </New>
++         </Arg>
+     </New>
+ 
+-</Configure>
+\ No newline at end of file
++</Configure>
+diff --git a/DemoSite/site/src/main/webapp/WEB-INF/log4j.xml b/DemoSite/site/src/main/webapp/WEB-INF/log4j.xml
+index befa47d..f5272fe 100755
+--- a/DemoSite/site/src/main/webapp/WEB-INF/log4j.xml
++++ b/DemoSite/site/src/main/webapp/WEB-INF/log4j.xml
+@@ -3,6 +3,7 @@
+ <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+     <appender name="console" class="org.apache.log4j.ConsoleAppender">
+         <param name="Target" value="System.out" />
++        <param name="encoding" value="UTF-8" />
+         <layout class="org.apache.log4j.PatternLayout">
+             <param name="ConversionPattern" value="[%5p] %d{HH:mm:ss} %c{1} - %m%n" />
+         </layout>

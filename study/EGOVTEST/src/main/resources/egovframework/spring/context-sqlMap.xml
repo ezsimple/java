@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+    <!-- lob Handler -->
+    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true" />
+
+    <!-- 
+       - iBATIS + Spring 개발 시 쿼리 매핑 파일이 변경할 때마다 웹애플리케이션 서버를 재기동해야 적용
+        - 이러한 불편을 없애기 위해 매핑 파일 변경을 실시간으로 감시, 적용하는 모듈을 적용
+        - 감시 대상 이 모듈은 iBATIS sqlmap 클라이언트의 sqlMap 및 sqlMapConfig 파일의 변경을 감지, 실시간 적용 가능
+     -->
+    <bean id="sqlMapClient" class="ion.net.common.db.ibatis.RefreshableSqlMapClientFactoryBean">
+        <property name="checkInterval" value="1000" /><!-- 1000분의 1초 단위로 지정 -->
+        <property name="configLocations">
+            <list>
+                <value>classpath:/egovframework/sqlmap/example/sql-map-config.xml</value>
+            </list>
+        </property>
+        <property name="dataSource" ref="dataSource-${Globals.DbType}"/>
+        <property name="lobHandler" ref="lobHandler"/>
+    </bean>
+
+</beans>
