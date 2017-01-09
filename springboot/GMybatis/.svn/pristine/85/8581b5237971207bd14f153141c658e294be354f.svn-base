@@ -1,0 +1,21 @@
+# \ub514\ud3f4\ud2b8 DS \uc124\uc815\uc774\ub2e4. \uc5ec\ub7ec\uac1c\uc758 DB\ub97c \uc5f0\uacb0\ud560 \uc218\ub3c4 \uc788\ub2e4.
+spring.default.datasource.type=org.apache.tomcat.jdbc.pool.DataSource
+spring.default.datasource.driverClassName=net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+spring.default.datasource.url=jdbc:log4jdbc:mysql://localhost:3306/springboot
+spring.default.datasource.username=springboot
+spring.default.datasource.password=1q2w3e4r
+spring.default.datasource.connectionProperties=useSSL=false;useUnicode=yes;characterEncoding=UTF-8;serverTimezone=UTC
+# spring.default.datasource.initSQL=SELECT 1
+
+# Logging LEVEL
+logging.level.org.springframework.web = DEBUG
+logging.level.org.springframework.security = INFO
+logging.level.kr.grid = DEBUG
+
+# \ucffc\ub9ac \ucd9c\ub825 \ub85c\uadf8 \ub808\ubca8
+logging.level.jdbc.sqlonly = DEBUG
+logging.level.jdbc.sqltiming = INFO
+logging.level.jdbc.audit =WARN
+logging.level.jdbc.resultset = ERROR
+logging.level.jdbc.resultsettable = ERROR
+logging.level.jdbc.connection = INFO

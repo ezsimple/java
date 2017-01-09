@@ -1,0 +1,10 @@
+{
+  "groups": [{
+    "name": "spring.first.datasource",
+    "type": "javax.sql.DataSource",
+    "sourceType": "kr.grid.system.DataSourceConfig",
+    "sourceMethod": "public javax.sql.DataSource defaultDataSource() "
+  }],
+  "properties": [],
+  "hints": []
+}

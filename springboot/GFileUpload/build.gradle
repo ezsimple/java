@@ -1,0 +1,44 @@
+buildscript {
+	ext {
+		springBootVersion = '1.4.3.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
+
+war {
+	baseName = 'grid'
+	version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	providedRuntime
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('javax.servlet:jstl')
+	providedCompile('org.apache.tomcat.embed:tomcat-embed-jasper') // gradle의 dependency scope는 compile, runtime, testCompile, testRuntime 만 있다.
+	
+	compileOnly('org.projectlombok:lombok')
+	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+}
