@@ -1,0 +1,43 @@
+[이클립스 단축키]
+
+디버거
+CTRL+F11 : 실행(run)
+F11 : 디버그 모드로 실행
+F5 : Step into
+F6 : Step over
+F7 : Step Return
+F8 : 멈추어 있던 쓰레드를 계소 실행(Resume)
+CTRL+SHIFT+B : 현재 커서 위치에서 BREAK POINT 설정/해제
+
+소스네비게이션
+CTRL+O : 해당 소스의 Method List 
+F4 : 클래스명을 선택하고 해당클래스의 Hierarchy를 볼수 있다.
+ALT+SHIFT+R : 변수명 및 메소드명 모두 변경
+CTRL+SHIFT+G : 캐럿이 위치한 메소드나 필드를 참조(Reference)하는 목록을 찾아줌
+F2 : 에러 원인에 대한 힌트
+CTRL+SHIFT+W : 열린 파일 모두 닫기
+CTRL+I : 들여쓰기 자동 수정
+CTRL+SHIFT+F : 소스정리
+CTRL+M : 전체화면 토글
+CTRL+T : 하이어라키 팝업창 (인터페이스 구현 클래스간 이동시 편리)
+CTRL+1 : Quick Fix
+CTRL+2+R : Rename (리펙토링)
+
+문자열찾기
+CTRL+SHIFT+L : 전체소스 Quick Text Search (grep -r)
+CTRL+K : 찾고자 하는 문자열을 블럭설정후 키를 누른다.
+CTRL+SHIFT+K : 역방향으로 문자열을 찾아감
+CTRL+H : Find 및 Replace
+
+템플릿 사용 : 
+sysout 입력후 CTRL+SPACE하면 System.out.println();
+try 입력후 CTRL+SPACE하면 try-catch문이 완성
+for 입력후 CTRL+SPACE하면 여러가지 for문을 완성할 수 있다.
+템플릿을 수정하거나 추가하려면 Window>Preference>Java>Editor>Templates에서 할 수 있다.
+
+에디터 변환
+CTRL+F6 : 열린 소스파일 전환
+CTRL+F7 : 뷰간 전환
+CTRL:+F8 : 퍼스펙트간 전환 (Spring<->Debug)
+CTRL+E : 뷰화면의 탭에 열린 페이지 이동 (파일명 필터링 가능)
+F12 : 에디터로 포커스 이동
