@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4" metadata-complete="true">
+
+	<description>I-ON Content Application Framework Engine - Release 3</description>
+
+	<display-name>ICafe</display-name>
+
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+			/WEB-INF/ApplicationContext.xml
+			/WEB-INF/ApplicationContext-islim.xml
+			/WEB-INF/ApplicationContext-security.xml
+		</param-value>
+	</context-param>
+
+    <!-- Log4J 초기화 : 시작 -->
+    <context-param>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>/WEB-INF/classes/log4j.properties</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>log4jRefreshInterval</param-name>
+        <param-value>5000</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>
+    <!-- Log4J 초기화 : 종료 -->
+	
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+    <listener>
+      <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
+    </listener>
+
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+
+    <filter-mapping>
+      <filter-name>springSecurityFilterChain</filter-name>
+      <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- XSS Cross Site Script Setting(2011.11.11) : Start -->
+    <!-- iCafe render pages & islim at.sh,tp.sh control pages added -->
+    <filter>
+      <filter-name>XSS</filter-name>
+      <filter-class>net.ion.icafe.security.filter.CrossScriptingFilter</filter-class>
+      <init-param>
+      <param-name>extensions</param-name>
+      <param-value>jsp sh</param-value>
+      </init-param>
+    </filter>
+    <filter-mapping>
+      <filter-name>XSS</filter-name>
+      <url-pattern>/page/*</url-pattern>
+      <url-pattern>/at.sh</url-pattern>
+      <url-pattern>/tp.sh</url-pattern>
+    </filter-mapping>
+    <!-- XSS Cross Site Script Setting(2011.11.11) : End   -->
+
+	<filter>
+		<filter-name>Character Encoding Filter</filter-name>
+		<filter-class>net.ion.icafe.controller.UserCharsetFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>Character Encoding Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<filter>
+		<filter-name>Common User Filter</filter-name>
+		<filter-class>net.ion.webapp.filter.CommonFilter</filter-class>
+	</filter>
+	<filter-mapping>
+	    <filter-name>Common User Filter</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>	
+	
+	<servlet>
+		<servlet-name>icafe</servlet-name>
+		<servlet-class>net.ion.icafe.controller.DefaultDispatcher</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>service</servlet-name>
+		<servlet-class>net.ion.icafe.controller.ServiceDispatcher</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	
+		 
+    <!-- Cstore Controller 
+	<servlet>
+		<servlet-name>action</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>
+				/WEB-INF/action-servlet.xml
+			</param-value>
+		</init-param>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>/cstore/*</url-pattern>
+	</servlet-mapping>
+    -->
+	 
+	<!-- servlet>
+		<servlet-name>render</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet-->
+	
+	<!-- 셀러TB2에서만 사용바람. 
+	<servlet>
+		<servlet-name>ionShell</servlet-name>
+		<servlet-class>net.ion.plugin.cstore.commUtil.shell.ionShell</servlet-class>
+	</servlet>
+	<servlet-mapping>
+        <servlet-name>ionShell</servlet-name>
+        <url-pattern>/ionShell.do</url-pattern>
+    </servlet-mapping>	
+	셀러TB2에서만 사용바람. -->
+
+    <!-- ionLog 기능 : 시작 -->
+    <!-- 상용 1번 서버 로그 : /data/wls11g/domains/cstore_domain/servers/cstore/logs -->
+    <!-- 상용 2번 서버 로그 : /NAS/cstorelogs/csellw2/outlog -->
+    <!-- 상용 3번 서버 로그 : /NAS/cstorelogs/csellw3/outlog -->
+    <context-param>
+        <description>Log Directory</description>
+        <param-name>logdir</param-name>
+        <param-value>/NAS/cstore/temp/logs</param-value>
+    </context-param>
+
+    <servlet>
+        <description>
+        </description>
+        <display-name>DownloadZipFile</display-name>
+        <servlet-name>DownloadZipFile</servlet-name>
+        <servlet-class>net.ion.plugin.cstore.commUtil.webtail.DownloadZipFile</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DownloadZipFile</servlet-name>
+        <url-pattern>/DownloadZipFile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <description>ionLog</description>
+        <display-name>ionLog</display-name>
+        <servlet-name>ionLog</servlet-name>
+        <servlet-class>net.ion.plugin.cstore.commUtil.webtail.ionLog</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ionLog</servlet-name>
+        <url-pattern>/ionLog.do</url-pattern>
+    </servlet-mapping>
+    <!-- ionLog 기능 : 끝 -->
+	
+	<servlet-mapping>
+		<servlet-name>icafe</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>*.svc</url-pattern>
+	</servlet-mapping>	
+	
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>*.api</url-pattern>
+	</servlet-mapping>	
+	
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>*.form</url-pattern>
+	</servlet-mapping>	
+
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>*.jsonp</url-pattern>
+	</servlet-mapping>	
+
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>	
+	
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>/render/*</url-pattern>
+	</servlet-mapping>	
+
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>/page/*</url-pattern>
+	</servlet-mapping>	
+
+	<servlet-mapping>
+		<servlet-name>service</servlet-name>
+		<url-pattern>/service/*</url-pattern>
+	</servlet-mapping>	
+<!-- START ISLIM -->
+	<servlet>
+		<servlet-name>islimAction</servlet-name>
+		<servlet-class>
+				org.springframework.web.servlet.DispatcherServlet
+		</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>
+					/WEB-INF/islim-servlet.xml
+			</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>islimAction</servlet-name>
+		<url-pattern>*.sh</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>islimAction</servlet-name>
+		<url-pattern>*.img</url-pattern>
+	</servlet-mapping>	
+	<servlet-mapping>
+		<servlet-name>islimAction</servlet-name>
+		<url-pattern>*.file</url-pattern>
+	</servlet-mapping>
+
+<!-- END  ISLIM -->
+
+<!-- START CSTORE2 WEB PAGE LAYOUT CONFIGURATION -->
+<!-- hostname/.../*.tiles 만 사용가능하므로 폐기함. -->
+<!-- 	<servlet> -->
+<!-- 		<servlet-name>tiles</servlet-name> -->
+<!-- 		<servlet-class>org.apache.tiles.web.startup.TilesServlet -->
+<!-- 		</servlet-class> -->
+<!-- 		<init-param> -->
+<!-- 			<param-name>org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG -->
+<!-- 			</param-name> -->
+<!-- 			<param-value>/WEB-INF/defs/cstore2-layout.xml,/WEB-INF/defs/project-layout.xml</param-value> -->
+<!-- 		</init-param> -->
+<!-- 		<load-on-startup>2</load-on-startup> -->
+<!-- 	</servlet> -->
+
+<!-- 	<servlet> -->
+<!-- 		<servlet-name>TilesDispatchServlet</servlet-name> -->
+<!-- 		<servlet-class>org.apache.tiles.web.util.TilesDispatchServlet</servlet-class> -->
+<!-- 	</servlet> -->
+
+<!-- 	<servlet-mapping> -->
+<!-- 		<servlet-name>TilesDispatchServlet</servlet-name> -->
+<!-- 		<url-pattern>*.tiles</url-pattern> -->
+<!-- 	</servlet-mapping> -->
+<!-- END CSTORE2 WEB PAGE LAYOUT CONFIGURATION -->
+
+	 <!-- WebService
+	<servlet>
+		<servlet-name>AdminServlet</servlet-name>
+		<servlet-class>org.apache.axis.transport.http.AdminServlet</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+
+	<servlet>
+		<servlet-name>AxisServlet</servlet-name>
+		<servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
+		<load-on-startup>5</load-on-startup>
+	</servlet>
+
+	MessengerService
+	<servlet>
+		<servlet-name>MS</servlet-name>
+		<servlet-class>net.ion.icafe.collaboration.messenger.MessengerServer</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AxisServlet</servlet-name>
+		<url-pattern>*.jws</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+	  	<servlet-name>AxisServlet</servlet-name>
+	  	<url-pattern>/servlet/AxisServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AxisServlet</servlet-name>
+	  	<url-pattern>/services/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+	  	<servlet-name>AdminServlet</servlet-name>
+	  	<url-pattern>/servlet/AdminServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>MS</servlet-name>
+		<url-pattern>/MS</url-pattern>
+	</servlet-mapping>
+	 -->
+	<session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+	<welcome-file-list>
+	  <welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+	<error-page>
+  		<exception-type>java.lang.Exception</exception-type>
+  		<location>/error.jsp</location> 
+	 </error-page>	
+	<error-page>
+		<error-code>403</error-code>
+		<location>/denied.jsp</location>
+	</error-page>	 
+    <error-page>
+        <error-code>404</error-code>
+        <location>/denied.jsp</location>
+    </error-page>
+</web-app>
+
