@@ -1,0 +1,9 @@
+2017.2.11
+현재 tomcat과 Netty 모두 running 되는 신비한(?) 현상이 나온다.
+Netty를 테스트해 본 결과 Netty를 모두 구현해 줘야 한다.
+그리고 tomcat 이 제거 되지 않고 있다. - exclusion 
+
+네티를 통해 채팅서비스를 구현할 경우
+TCP, UDP, WEBSOCKET 관련 핸들링을 다시 구현해야 한다.
+
+이건 더 비싼 고오급 기술자에게 넘기자!
