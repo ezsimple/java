@@ -17,6 +17,8 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.node.NodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchProperties;
@@ -34,7 +36,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 @EnableElasticsearchRepositories(includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = ElasticsearchCrudRepository.class))
 public class ElasticsearchConfiguration implements DisposableBean {
 
-    private static Log logger = LogFactory.getLog(ElasticsearchConfiguration.class);
+    private Logger logger = LoggerFactory.getLogger(ElasticsearchConfiguration.class);
 
     @Autowired 
     private ElasticsearchProperties properties;

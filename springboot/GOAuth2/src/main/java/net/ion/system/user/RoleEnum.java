@@ -2,9 +2,9 @@ package net.ion.system.user;
 
 public enum RoleEnum {
 
-	ROLE_ADMIN(10, "ROLE_ADMIN", "ADMIN"), 
-	ROLE_OPERATOR(20, "ROLE_OPERATOR", "OPERATOR"), 
-	ROLE_CLIENT(30, "ROLE_CLIENT", "CLIENT"); // CHAT USER
+	ROLE_ADMIN    (10, "ROLE_ADMIN", "ADMIN"), 
+	ROLE_OPERATOR (20, "ROLE_OPERATOR", "OPERATOR"), 
+	ROLE_CLIENT   (30, "ROLE_CLIENT", "CLIENT"); // appId, machineId, ... etc
 
 	private int code;
 	private String label;

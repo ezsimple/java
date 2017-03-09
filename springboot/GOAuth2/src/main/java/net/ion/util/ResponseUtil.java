@@ -4,15 +4,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ResponseUtil {
 
-	private static Log logger = LogFactory.getLog(ResponseUtil.class);
+	private static Logger logger = LoggerFactory.getLogger(ResponseUtil.class);
 	
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getResponseAsMap(String responseBody)  {

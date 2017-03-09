@@ -1,5 +1,7 @@
 package net.ion.system;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +27,8 @@ import net.ion.system.user.CustomUserDetailsService;
 
 @Configuration
 public class OAuth2Configuration extends SpringBootServletInitializer {
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Configuration
 	@EnableGlobalMethodSecurity(securedEnabled = true)	

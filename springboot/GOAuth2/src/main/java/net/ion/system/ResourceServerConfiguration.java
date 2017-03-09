@@ -1,5 +1,7 @@
 package net.ion.system;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,6 +20,8 @@ import net.ion.system.user.RoleEnum;
 @Configuration
 @EnableResourceServer // API 서버 인증 (또는 권한 설정)
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
