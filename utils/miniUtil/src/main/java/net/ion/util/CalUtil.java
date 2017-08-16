@@ -12,4 +12,13 @@ public class CalUtil {
 	public final static Calendar newCalendar() {
 		return Calendar.getInstance();
 	}
+	
+	public final static int nowYear() {
+		return newCalendar().get(Calendar.YEAR);
+	}
+
+	public final static int nowMonth() {
+		return newCalendar().get(Calendar.MONTH);
+	}
+
 }
