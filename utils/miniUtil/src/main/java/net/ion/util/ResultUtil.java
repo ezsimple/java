@@ -12,12 +12,12 @@ public class ResultUtil {
 		return result;
 	}
 
-	private static void setDefault(Map<String, Object> result) {
+	public static void setDefault(Map<String, Object> result) {
 		result.put(keys[0], false);
 		result.put(keys[1], "요청이 실패 하였습니다.");
 	}
 
-	private static void setSuccess(Map<String, Object> result, Boolean value) {
+	public static void setSuccess(Map<String, Object> result, Boolean value) {
 		final String key = keys[0];
 		if (result.containsKey(key)) {
 			result.remove(key);
