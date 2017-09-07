@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam">
+    <select id="getCurrentDateTime" resultType="String">
+        SELECT NOW()
+    </select>
+
+    <select id="getTestList" parameterType="hashmap" resultType="hashmap">
+        SELECT * FROM TEST WHERE 1=1
+        <if test="uid != null and uid != ''">
+            <![CDATA[
+            AND UID = #{uid}
+            ]]>
+        </if>
+    </select>
+
+</mapper>
