@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="attach">
+	<select id="list_1_files" useCache="true" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM sys_attach_tbl
+		WHERE file_group_id = #{file_group_id}
+		ORDER BY created
+	</select>
+	<select id="file_1_#file" useCache="true" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM sys_attach_tbl
+		WHERE file_group_id = #{file_group_id}
+	</select>
+	<select id="dowonload_1_#row" useCache="true" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM sys_attach_tbl
+		WHERE file_id = #{file_id}
+	</select>
+   	<update id="insert_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		INSERT INTO sys_attach_tbl(
+			 file_id,file_name,file_ext,file_path,file_size,file_group_id,file_kind
+		)
+		SELECT file_id,file_name,file_ext,file_path,file_size,file_group_id,file_kind
+		FROM sys_attach_tbl
+		WHERE 1=2
+	  	<foreach item="loop"  collection="_atach_all" >
+	  		UNION ALL
+			SELECT #{loop.id},#{loop.name},#{loop.ext},#{loop.path},#{loop.size},#{loop.group_id},#{loop.file_kind}
+		</foreach>
+
+	</update>
+   	<update id="insert_2" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		UPDATE sys_attach_tbl
+		SET file_group_id = concat('del_', file_group_id)
+		WHERE  file_id in
+			  	<foreach item="id"  collection="del_file_id_"  open="(" close=")" separator=",">
+						#{id}
+				</foreach>
+	</update>
+</mapper>

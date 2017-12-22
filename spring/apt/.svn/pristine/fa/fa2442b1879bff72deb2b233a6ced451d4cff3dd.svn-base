@@ -1,0 +1,46 @@
+@charset "UTF-8";
+
+/*reset */
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:top;margin:0;padding:0}
+article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}
+body{font-size:100%;font-weight:normal;line-height:1;}
+ol,ul{list-style:none;}
+blockquote,q{quotes:none;}
+blockquote:before,blockquote:after,q:before,q:after{content:none;}
+table{border-collapse:collapse;border-spacing:0;}
+input, select,button{vertical-align:middle;/*-webkit-appearance: none;*/}
+label {cursor:pointer;display:none;}
+blind, legend, hr, caption{display:block;overflow:hidden;position:absolute;top:0;left:-1000em;}
+i, em, address {font-style:normal;font-weight:normal;}
+input[type="button"]{cursor:pointer;}
+a, button {cursor:pointer;border:0 none;}
+a {text-decoration:none;}
+a:hover, a:focus {text-decoration:none;}
+in,textarea{-webkit-rtl-ordering:logical;-webkit-user-select:text;flex-direction:column;white-space:pre-wrap;word-wrap:break-word;-webkit-writing-mode:horizontal-tb;-webkit-appearance:none;resize:none;}
+
+/* global */
+.f_l {float:left !important;}
+.f_r {float:right !important;}
+.cl_b {clear:both !important;}
+.show {display:block !important;}
+.hide {display:none !important;}
+.inb {display:inline-block !important; *display:inline !important; *zoom:1 !important;}
+.txt_l {text-align:left !important;}
+.txt_c {text-align:center !important;}
+.txt_r {text-align:right !important;}
+.hidden {text-indent:-5000px;width:0;height:0;font-size:0;line-height:0;}
+.color_red {color:#FA641F !important;}
+
+/* width */
+.col_01 {width:100% !important;}
+.col_02 {width:50% !important;}
+.col_03 {width:33.333% !important;}
+.col_04 {width:25% !important;}
+.col_05 {width:20% !important;}
+.col_06 {width:16.666% !important;}
+.col_07 {width:14.285% !important;}
+.col_08 {width:12.5% !important;}
+.col_09 {width:11.111% !important;}
+.col_10 {width:10% !important;}
+.col_11 {width:9.09% !important;}
+.col_12 {width:8.333% !important;}

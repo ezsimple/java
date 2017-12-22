@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: smackx-debug:smackx-debug:custom">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/smackx-debug/smackx-debug/custom/smackx-debug-custom.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/smackx-debug/smackx-debug/custom/smackx-debug-custom-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/smackx-debug/smackx-debug/custom/smackx-debug-custom-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

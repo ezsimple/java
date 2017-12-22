@@ -1,0 +1,40 @@
+	<!-- IoE.m 전력 사용량 연동 1. 사용량 등록 -->
+	<update id="powerCreate_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		INSERT INTO dr_power_consume_tbl
+			(device_id, measure_date,  duration, power_consumption, ioe_m_ip, device_cd, device_type, optin)
+		SELECT device_id, measure_date,  duration, power_consumption, ioe_m_ip, device_cd, device_type, optin
+		FROM dr_power_consume_tbl
+		WHERE 1=2
+		<if test="loop_ ==  null or loop_ ==  ''">
+		  		UNION ALL
+				SELECT #{device_id}, #{measure_date}, #{interval}, #{power_consumption}, #{ioe_m_ip}, #{device_cd}, 'smartmeter', #{optin} 
+		</if>
+		
+		<if test="loop_ !=  null and loop_ !=  ''">
+		  	<foreach item="loop"  collection="loop_" >
+		  		UNION ALL
+				SELECT *
+				FROM (SELECT #{device_id}, #{loop.measure_date}, #{interval}, #{loop.power_consumption}, #{ioe_m_ip}, #{device_cd}, 'smartmeter', #{optin}) t1
+				WHERE 0 = (SELECT count(*) FROM dr_power_consume_tbl WHERE device_id = #{device_id} and measure_date = #{loop.measure_date})
+			</foreach>
+		</if>
+	</update>
+	<!-- IoE.m 전력 사용량 연동 2. 신규 스마트 미터 등록 -->
+	<update id="powerCreate_2" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		INSERT INTO dr_cust_meter_tbl (cu_id,device_id,device_type,device_ip,device_cd)
+		SELECT distinct t2.cu_id, t1.device_id,1.device_type,t1.ioe_m_ip,t1.device_cd
+		FROM dr_power_consume_tbl t1, dr_cust_tbl t2
+		WHERE device_id not in (SELECT device_id FROM dr_cust_meter_tbl) 
+			and measure_date = #{measure_date}
+	</update>
+	<!-- IoE.m 전력 사용량 연동 3. 이벤트 참여 여부 처리 -->
+	<update id="powerCreate_3" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		UPDATE dr_cust_meter_tbl x1
+		SET 
+		<if test="optin !=  null and optin !=  ''">
+			optin = #{optin},
+		</if>
+			device_cd = #{device_cd},
+			device_ip = #{ioe_m_ip}
+		WHERE device_id = #{device_id}
+	</update>

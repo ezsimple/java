@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="drApi">
+	<!-- 이벤트 수신 -->
+	<update id="event_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		<selectKey keyProperty="event_count" resultType="int" order="BEFORE">
+			SELECT count(*) event_count
+			FROM dr_event_rcv_tbl
+			WHERE event_id = #{event_id}
+		</selectKey>
+		
+		<if test="event_count ==  0">
+			INSERT INTO dr_event_rcv_tbl (event_id, created_date,start_date,tot_duration,tot_reduction,event_status,test_event,signal_name,signal_type,signal_id,file_id)
+			VALUE ( #{event_id}, #{created_date}, #{start_date}, #{tot_duration}, #{tot_reduction}, #{event_status}, #{test_event}, #{signal_name}, #{signal_type}, #{signal_id},#{file_id})
+		</if>
+		
+		<if test="event_count != 0">
+			UPDATE dr_event_rcv_tbl
+			SET 
+				start_date = #{start_date},
+				tot_duration = #{tot_duration},
+				tot_reduction = #{tot_reduction},
+				event_status = #{event_status},
+				test_event = #{test_event},
+				signal_name = #{signal_name},
+				signal_type = #{signal_type},
+				signal_id = #{signal_id},
+				file_id = #{file_id}
+			WHERE event_id = #{event_id}
+		</if>
+	</update>
+	<!-- 종료된 이벤트 취소처리 -->
+	<update id="evenCancel_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+			UPDATE dr_event_rcv_tbl
+			SET 
+				event_status = 'cancelled'
+			WHERE event_status &lt;> 'cancelled' and DATE_ADD(start_date, INTERVAL tot_duration MINUTE) &lt; now()
+	</update>
+	
+	<!-- 이벤트 참여 대상 스마트 미터 제어 정보 연동 -->
+	<update id="evenControl_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		INSERT INTO dr_event_meter_ctl_tbl(event_id,cu_id,device_id,optin)
+		SELECT #{event_id}, cu_id,device_id,optin
+		FROM dr_cust_meter_tbl
+	</update>
+	<!-- 전송일자 설정 -->
+	<!--<update id="evenControl_2" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">-->
+			<!--UPDATE dr_event_rcv_tbl-->
+			<!--SET -->
+				<!--meter_ctl_snd_date = now()-->
+			<!--WHERE event_id = #{event_id}-->
+	<!--</update>-->
+	
+	<!-- IoE.m 전력 사용량 연동 1. 사용량 등록 -->
+	<update id="powerCreate_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		INSERT INTO dr_power_consume_tbl
+			(device_id, measure_date,  duration, power_consumption, ioe_m_ip, device_cd, device_type, optin)
+		SELECT device_id, measure_date,  duration, power_consumption, ioe_m_ip, device_cd, device_type, optin
+		FROM dr_power_consume_tbl
+		WHERE 1=2
+		<if test="loop_ ==  null or loop_ ==  ''">
+		  		UNION ALL
+				SELECT #{device_id}, #{measure_date}, #{interval}, #{power_consumption}, #{ioe_m_ip}, #{device_cd}, 'smartmeter', #{optin} 
+		</if>
+		
+		<if test="loop_ !=  null and loop_ !=  ''">
+		  	<foreach item="loop"  collection="loop_" >
+		  		UNION ALL
+				SELECT *
+				FROM (SELECT #{device_id}, #{loop.measure_date}, #{interval}, #{loop.power_consumption}, #{ioe_m_ip}, #{device_cd}, 'smartmeter', #{optin}) t1
+				WHERE 0 = (SELECT count(*) FROM dr_power_consume_tbl WHERE device_id = #{device_id} and measure_date = #{loop.measure_date})
+			</foreach>
+		</if>
+	</update>
+	<!-- IoE.m 전력 사용량 연동 2. 신규 스마트 미터 등록 -->
+	<update id="powerCreate_2" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		INSERT INTO dr_cust_meter_tbl (cu_id,device_id,device_type,device_ip,device_cd)
+		SELECT distinct t2.cu_id, t1.device_id,1.device_type,t1.ioe_m_ip,t1.device_cd
+		FROM dr_power_consume_tbl t1, dr_cust_tbl t2
+		WHERE device_id not in (SELECT device_id FROM dr_cust_meter_tbl) 
+			and measure_date = #{measure_date}
+	</update>
+	<!-- IoE.m 전력 사용량 연동 3. 이벤트 참여 여부 처리 -->
+	<update id="powerCreate_3" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		UPDATE dr_cust_meter_tbl x1
+		SET 
+		<if test="optin !=  null and optin !=  ''">
+			optin = #{optin},
+		</if>
+			device_cd = #{device_cd},
+			device_ip = #{ioe_m_ip}
+		WHERE device_id = #{device_id}
+	</update>
+
+	<!-- 제어 정보 전송을 위한 시작인 이벤트 유무 확인 (폴링방식) -->
+	<select id="powerSearch_1_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="int">
+		select count(*) as cnt  from dr_event_rcv_tbl
+		where event_status = 'active'
+		and now() between start_date and DATE_ADD(start_date,INTERVAL tot_duration MINUTE)
+	</select>
+	<!-- 제어 정보 전송을 위한 시작인 이벤트 정보 조회 (폴링방식) -->
+	<select id="powerSearch_2_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+        <choose>
+			<when test="cnt != 0">
+				SELECT *
+				FROM dr_event_rcv_tbl
+				WHERE event_status = 'active'
+				and now() between start_date and DATE_ADD(start_date,INTERVAL tot_duration MINUTE)
+			</when>
+			<otherwise>
+				select * from dr_event_rcv_tbl where 1=2
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 제어 정보 전송을 위한 이벤트 참여 기기 정보 조회    -->
+	<select id="powerSearch_3_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		<choose>
+			<when test="cnt != 0">
+				SELECT device_id, optin, 'off' device_on_off
+				FROM dr_cust_meter_tbl
+				WHERE  optin = 'Y'
+			</when>
+			<otherwise>
+				select * from dr_cust_meter_tbl where 1=2
+			</otherwise>
+		</choose>
+	</select>
+
+	<!-- IoE.m 전력 사용량 전송 -->
+	<select id="sendPower_1_rows" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT measure_date, sum(power_consumption) power_consumption, 15 duration
+		FROM (
+			SELECT date_add(dh, interval m minute) measure_date, duration, power_consumption
+			FROM (
+				SELECT  concat(DATE_FORMAT(measure_date, '%Y-%m-%d %H'),':00:00') dh, (TRUNCATE(DATE_FORMAT(measure_date, '%i')/15, 0)+1)*15  m,
+					duration,power_consumption
+				FROM dr_power_consume_tbl
+				WHERE measure_date > DATE_SUB(DATE(now()), INTERVAL 15 minute)
+			) t1
+		) t2
+		GROUP BY measure_date
+	</select>
+
+	<!-- 한전 전력 사용량 연동 -->
+	<update id="power_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		<selectKey keyProperty="cnt" resultType="int" order="BEFORE">
+			SELECT count(*) cnt
+			FROM dr_power_consume_kep_tbl
+			WHERE kep_cu_id = #{kep_cu_id} and device_id = #{device_id} and measure_date = #{measure_date}
+		</selectKey>
+		
+		<if test="cnt ==  0">
+			INSERT INTO dr_power_consume_kep_tbl 
+					(kep_cu_id,device_id,measure_date,duration,power_consumption)
+			VALUES ( #{kep_cu_id}, #{device_id}, #{measure_date}, #{duration}, #{power_consumption})
+		</if>
+		
+		<if test="cnt != 0">
+			UPDATE dr_power_consume_kep_tbl
+			SET 
+				power_consumption = #{power_consumption}
+			WHERE kep_cu_id = #{kep_cu_id} and device_id = #{device_id} and measure_date = #{measure_date}
+		</if>
+	</update>
+	<!-- 한전 고객기준부하량 연동 -->
+	<update id="cbl_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		<selectKey keyProperty="cnt" resultType="int" order="BEFORE">
+			SELECT count(*) cnt
+			FROM dr_power_cbl_kep_tbl
+			WHERE kep_cu_id = #{kep_cu_id} and cbl_std_date = #{cbl_std_date} and cbl_std_hour = #{cbl_std_hour}
+		</selectKey>
+		
+		<if test="cnt ==  0">
+			INSERT INTO dr_power_cbl_kep_tbl 
+					(kep_cu_id, cbl_std_date, cbl_std_hour, cbl)
+			VALUES ( #{kep_cu_id}, #{cbl_std_date}, #{cbl_std_hour}, #{cbl})
+		</if>
+		
+		<if test="cnt != 0">
+			UPDATE dr_power_cbl_kep_tbl
+			SET 
+				cbl = #{cbl}
+			WHERE kep_cu_id = #{kep_cu_id} and cbl_std_date = #{cbl_std_date} and cbl_std_hour = #{cbl_std_hour}
+		</if>
+	</update>
+	
+	<!-- 스케쥴 로그기록 -->
+	<update id="shcInsert_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		<selectKey keyProperty="cnt" resultType="int" order="BEFORE">
+			SELECT count(*) cnt
+			FROM sys_schedule_tbl
+			WHERE scd_id = #{scd_id}
+		</selectKey>
+		
+		<if test="cnt ==  0">
+			INSERT INTO sys_schedule_tbl 
+					(scd_id,scd_name)
+			VALUES ( #{scd_id}, #{scd_name})
+		</if>
+		<if test="cnt >  0">
+			UPDATE sys_schedule_tbl
+			SET 
+				scd_str_dt = scd_str_dt
+			WHERE scd_id = '11'
+		</if>
+	</update>
+	<update id="schStart_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+			UPDATE sys_schedule_tbl
+			SET 
+				scd_str_dt = #{scd_str_dt}
+			WHERE scd_id = #{scd_id}
+	</update>
+	<update id="schEnd_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+			UPDATE sys_schedule_tbl
+			SET 
+				<if test="file_id != null">
+					file_id = #{file_id},
+				</if>
+				scd_end_dt = #{scd_end_dt}
+			WHERE scd_id = #{scd_id}
+	</update>
+	<update id="schError_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+			UPDATE sys_schedule_tbl
+			SET 
+				<if test="file_id != null">
+					file_id = #{file_id},
+				</if>
+				err_dt = #{err_dt},
+				err_msg = #{err_msg}
+			WHERE scd_id = #{scd_id}
+	</update>
+</mapper>

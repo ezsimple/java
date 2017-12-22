@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aptLog">
+ 	<!-- 연동로그파일 조회 -->
+	<select id="powerList_1_last" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT max(created) as day FROM sys_attach_tbl
+	</select>
+	<select id="powerList_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT SQL_CALC_FOUND_ROWS t1.*
+		FROM sys_attach_tbl t1
+		WHERE 1=1
+			<if test="search_created == null or search_created == ''">
+				and  created between DATE(#{last[0].day }) and DATE_ADD(DATE(#{last[0].day }), INTERVAL 1 DAY)
+			</if>
+			<if test="search_created != null and search_created != ''">
+				and  created between DATE(#{search_created}) and DATE_ADD(DATE(#{search_created}), INTERVAL 1 DAY)
+			</if>
+			<if test="search_file_kind != null and search_file_kind != ''">
+				and  file_kind = #{search_file_kind} 
+			</if>
+		ORDER BY created desc
+		LIMIT ${_start==null ? 0 : _start} , ${_rows==null  ? 1000 : _rows}
+	</select>
+	<!-- 레코드 갯수 -->
+	<select id="powerList_3_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT FOUND_ROWS() cnt, ${_start==null ? 0 : _start} _start, ${_rows==null  ? 1000 : _rows} _rows
+	</select>
+	<!-- 연동상태 조회 -->
+	<select id="scheduleList_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT t1.*, if( err_dt>scd_str_dt, 'F', 'T') log_status
+		FROM sys_schedule_tbl t1
+		WHERE USE_YN = 'y'
+	</select>
+	<!-- 연동상태 상세 조회 -->
+	<select id="scheduleView_1_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM sys_schedule_tbl t1
+		WHERE scd_id = #{scd_id}
+	</select>
+</mapper>
+ 

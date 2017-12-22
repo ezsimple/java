@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aptKep">
+	<!-- 전일대비 전력사용량 -->
+	<select id="powerKep_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT if(DATE_FORMAT(now(), '%d')=DATE_FORMAT(measure_date, '%d'), '오늘', '어제') gbn,  DATE_FORMAT(measure_date, '%H') + DATE_FORMAT(measure_date, '%i')/60 measure_date_x, DATE_FORMAT(measure_date, '%H.%i') measure_date, 
+			sum(power_consumption*60/duration) power_consumption_,
+			sum(power_consumption) power_consumption
+		FROM dr_power_consume_kep_tbl t1 
+		WHERE measure_date >= DATE(DATE_SUB(now(), INTERVAL 1 DAY))
+			<if test="kep_cu_id != '' and kep_cu_id != null">
+				and kep_cu_id = @{kep_cu_id}
+			</if>
+		GROUP BY measure_date 
+	</select>
+	<!-- 전월대비 전력사용량 -->
+	<select id="powerKepM_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT measure_date m, if(DATE_FORMAT(now(), '%m')=DATE_FORMAT(measure_date, '%m'), '당월', '전월') gbn,    DATE_FORMAT(measure_date, '%d') measure_date_x, DATE_FORMAT(measure_date, '%m.%d') measure_date,
+			power_consumption_, power_consumption
+		FROM (		
+			SELECT DATE_FORMAT(measure_date, '%Y-%m-%d')  measure_date,
+				sum(power_consumption*60/duration) power_consumption_,
+			sum(power_consumption) power_consumption
+			FROM dr_power_consume_kep_tbl 
+			WHERE measure_date > DATE_FORMAT(DATE_SUB(now(), INTERVAL 1 MONTH), '%Y-%m-01')
+				<if test="kep_cu_id != '' and kep_cu_id != null">
+					and kep_cu_id = @{kep_cu_id}
+				</if>
+			GROUP BY DATE_FORMAT(measure_date, '%Y-%m-%d') 
+		) t1
+ 	</select>
+	<!-- CBL대비 전력사용량 -->
+	<select id="powerCblKep_1_last" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select max(cbl_std_date) as day from  dr_power_cbl_kep_tbl
+	</select>
+	<select id="powerCblKep_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT concat(t1.cbl_std_date,' ',t1.measure_time) as measure_date, t3.today, t2.yesterday, t1.cbl FROM
+		(SELECT cbl_std_date, sec_to_time(cbl_std_hour * 3600) measure_time, sum(cbl) cbl
+		FROM dr_power_cbl_kep_tbl 
+		WHERE cbl_std_date > DATE(DATE_SUB(#{last[0].day }, INTERVAL 1 DAY))
+		GROUP BY cbl_std_date, cbl_std_hour
+		)t1
+		LEFT OUTER JOIN
+		(select DATE_FORMAT(measure_date, '%T') measure_time, ifnull(sum(power_consumption*60/duration),0) as yesterday
+		from dr_power_consume_kep_tbl
+		WHERE
+			DATE_FORMAT(measure_date, '%Y-%m-%d')=DATE_FORMAT(SUBDATE(#{last[0].day},1), '%Y-%m-%d')
+		    GROUP BY measure_date
+		)t2 ON t2.measure_time = t1.measure_time
+		LEFT OUTER JOIN
+		(select DATE_FORMAT(measure_date, '%T') measure_time, ifnull(sum(power_consumption*60/duration),0) as today
+		from dr_power_consume_kep_tbl
+		WHERE
+			DATE_FORMAT(measure_date, '%Y-%m-%d')=DATE_FORMAT(#{last[0].day}, '%Y-%m-%d')
+		    GROUP BY measure_date
+		)t3 ON t3.measure_time = t1.measure_time
+	</select>
+	<!--  #{session.kep_cu_id}  -->
+	<!-- 전력사용량 조회 목록 -->
+	<select id="powerKepList_1_last" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+    	select max(measure_date) as day from dr_power_consume_kep_tbl
+    </select>
+	<select id="powerKepList_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT SQL_CALC_FOUND_ROWS t1.*
+		FROM dr_power_consume_kep_tbl  t1
+		WHERE 1=1
+			<if test="kep_cu_id != '' and kep_cu_id != null">
+				and kep_cu_id = @{kep_cu_id}
+			</if>
+			<if test="search_measure_date == null or search_measure_date == ''">
+				and  measure_date between DATE(#{last[0].day }) and DATE_ADD(DATE(#{last[0].day }), INTERVAL 1 DAY)
+			</if>
+			<if test="search_measure_date != null and search_measure_date != ''">
+				and  measure_date between DATE(#{search_measure_date}) and DATE_ADD(DATE(#{search_measure_date}), INTERVAL 1 DAY)
+			</if>
+		ORDER BY measure_date desc
+		LIMIT ${_start==null ? 0 : _start} , ${_rows==null  ? 1000 : _rows}
+	</select>
+	<!-- 레코드 갯수 -->
+	<select id="powerKepList_3_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT FOUND_ROWS() cnt, ${_start==null ? 0 : _start} _start, ${_rows==null  ? 20 : _rows} _rows
+	</select>
+	<!-- CBL 조회 -->
+	<select id="powerCBLList_1_last"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select max(cbl_std_date) as day from dr_power_cbl_kep_tbl
+	</select>
+	<select id="powerCBLList_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT SQL_CALC_FOUND_ROWS t1.*
+		FROM dr_power_cbl_kep_tbl t1 
+		WHERE 1=1
+			<if test="kep_cu_id != '' and kep_cu_id != null">
+				and kep_cu_id = @{kep_cu_id}
+			</if>
+			<if test="search_cbl_std_date == null or search_cbl_std_date == ''">
+				and  cbl_std_date = DATE(#{last[0].day })
+			</if>
+			<if test="search_cbl_std_date != null and search_cbl_std_date != ''">
+				and  cbl_std_date = DATE(#{search_cbl_std_date})
+			</if>
+		ORDER BY cbl_std_date desc, cbl_std_hour desc
+	</select>
+	<!-- 레코드 갯수 -->
+	<select id="powerCBLList_3_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT FOUND_ROWS() cnt, ${_start==null ? 0 : _start} _start, ${_rows==null  ? 20 : _rows} _rows
+	</select>
+</mapper>

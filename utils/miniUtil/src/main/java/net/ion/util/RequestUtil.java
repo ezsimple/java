@@ -1,5 +1,10 @@
 package net.ion.util;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Iterator;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
@@ -9,6 +14,22 @@ public class RequestUtil {
 
 	public static JSONObject getParameterToJson(HttpServletRequest request) {
 		return JSONObject.fromObject(request.getParameterMap());
+	}
+	
+	public static JSONObject getParameterToJson(Map<String,Object> map) {
+		return JSONObject.fromObject(map);
+	}
+	
+	public static Map<String, Object> getEncodedMap(Map<String,Object> map) throws UnsupportedEncodingException {
+		Map newMap = MapUtil.newMap();
+		Iterator<String> keys = map.keySet().iterator();
+		while(keys.hasNext()) {
+			String key = keys.next();
+			Object value = map.get(key);
+      String encValue = URLEncoder.encode((String) value, "UTF-8");
+      newMap.put(key, encValue);
+		}
+		return newMap;
 	}
 
 	// key에 해당하는 배열의 첫번째 스트링만을 리턴한다. (대다수의 경우)

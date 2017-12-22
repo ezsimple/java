@@ -1,0 +1,19 @@
+.main_layout{
+	 clear: both;margin: 0 auto 5px auto; width: 1000px; 
+}
+.hide_web{
+	display: none;
+}
+.top_menu{
+	float:left;width: 100px; text-align: center;cursor: pointer; background: #111111; color: #ffffff; font-weight: bold;margin-right: 1px; padding:5px;
+}
+.home_tit{
+	text-align: center; background: #747474; color: #ffffff; font-weight: bold; padding:5px;
+}
+.main_tite{
+	text-align: center; background: #747474; color: #ffffff; font-weight: bold; padding:5px;
+}
+.menu_left{
+	display: none;
+}
+

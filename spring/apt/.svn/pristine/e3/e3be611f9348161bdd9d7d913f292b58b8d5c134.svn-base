@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aptPower">
+	<select id="power_1_last"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select max(measure_date) as day from dr_power_consume_tbl
+	</select>
+	<!-- 전일대비 전력사용량 10분단위로 집계-->
+	<select id="power_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT concat(DATE_FORMAT(#{last[0].day }, '%Y-%m-%d'),' ',tt2.measure_time) measure_time, yesterday, today
+		FROM (
+			(SELECT measure_date measure_date, DATE_FORMAT(measure_date, '%T') measure_time, ((sum(power_consumption)/sum(duration))*3600) today
+			FROM (
+				SELECT concat(DATE_FORMAT(measure_date, '%Y-%m-%d %H'), ':', TRUNCATE(DATE_FORMAT(measure_date, '%i')/10,0),'0') measure_date, power_consumption, duration
+				FROM dr_power_consume_tbl
+				WHERE
+				DATE_FORMAT(measure_date, '%Y-%m-%d')=DATE_FORMAT(#{last[0].day }, '%Y-%m-%d')
+			) t2
+			GROUP BY measure_date) tt2
+			LEFT JOIN
+			(SELECT measure_date measure_date, DATE_FORMAT(measure_date, '%T') measure_time, ((sum(power_consumption)/sum(duration))*3600) yesterday
+			FROM (
+			SELECT  concat(DATE_FORMAT(measure_date, '%Y-%m-%d %H'), ':', TRUNCATE(DATE_FORMAT(measure_date, '%i')/10,0),'0') measure_date, power_consumption, duration
+			FROM dr_power_consume_tbl
+			WHERE
+			DATE_FORMAT(measure_date, '%Y-%m-%d')=DATE_FORMAT(SUBDATE(#{last[0].day },1), '%Y-%m-%d')
+			) t1
+			GROUP BY measure_date) tt1
+			ON tt1.measure_time = tt2.measure_time
+		)
+ 	</select>
+ 	<!-- 메인 스마트미터 최근 검침상태 정보 -->
+ 	<select id="main_1_last" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+ 		select max(measure_date) as day from dr_power_consume_tbl
+ 	</select>
+	<select id="main_2_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT count(*) meter_cnt, max(measure_date) measure_date, sum(today_value) today_value, 
+			if(max(measure_date) > DATE_SUB(#{last[0].day }, INTERVAL 10 MINUTE), 'OK', 'ERR') ioem_status
+		FROM (
+			SELECT device_id, DATE_FORMAT(max(measure_date), '%Y-%m-%d %H:%i:%s') measure_date, sum(power_consumption) today_value
+			FROM dr_power_consume_tbl 
+			WHERE measure_date >= DATE(#{last[0].day })
+			GROUP BY device_id
+		) t1
+ 	</select>
+ 	<!-- 스마트미터 검침 조회 -->
+	<!-- 
+		주의 : 추후 전품연과 연동이 된다면 
+			(select measure_date from dr_power_consume_tbl order by measure_date desc limit 1) ==> now()로 바꾸어야 합니다.
+	 -->
+	<select id="powerList_1_last" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select max(measure_date) as day from dr_power_consume_tbl
+	</select>
+	<select id="powerList_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT SQL_CALC_FOUND_ROWS device_id,measure_date,device_type,duration/60 duration,power_consumption,ioe_m_ip,device_cd,optin
+		FROM dr_power_consume_tbl  
+		WHERE
+			<if test="search_measure_date == null or search_measure_date == ''">
+				measure_date between DATE(#{last[0].day }) and DATE_ADD(DATE(#{last[0].day }), INTERVAL 1 DAY)
+			</if>
+			<if test="search_measure_date != null and search_measure_date != ''">
+				measure_date between DATE(#{search_measure_date}) and DATE_ADD(DATE(#{search_measure_date}), INTERVAL 1 DAY)
+			</if>
+			<if test="search_optin != null and search_optin != ''">
+				and  optin = #{search_optin}
+			</if>
+			<if test="search_device_id != null and search_device_id != ''">
+				and  device_id = #{search_device_id}
+			</if>
+			<if test="search_device_cd != null and search_device_cd != ''">
+				and  device_cd = #{search_device_cd}
+			</if>
+		ORDER BY measure_date desc
+		LIMIT ${_start==null ? 0 : _start} , ${_rows==null  ? 1000 : _rows}
+	</select>
+	<!-- 레코드 갯수 -->
+	<select id="powerList_3_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT FOUND_ROWS() cnt, ${_start==null ? 0 : _start} _start, ${_rows==null  ? 1000 : _rows} _rows
+	</select>
+</mapper>
+ 

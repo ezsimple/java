@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: smack:smack:custom">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/smack/smack/custom/smack-custom.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/smack/smack/custom/smack-custom-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/smack/smack/custom/smack-custom-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

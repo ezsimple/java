@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aptStat">
+
+    <!-- 일일 전력 사용량 통계 데이타 생성 -->
+	<select id="dailyStat_1_tmp" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select date(measure_time) as measure_date, GROUP_CONCAT(measure_time,',',today,',',yesterday SEPARATOR '\\n ') as content from (
+			SELECT concat(DATE_FORMAT(curdate(), '%Y/%m/%d'),' ',tt1.measure_time) as measure_time, today, yesterday
+			FROM (SELECT @ROWNUM := @ROWNUM + 1 AS ROWNUM, measure_date ,DATE_FORMAT(measure_date, '%T') as measure_time, round(power_consumption,3) as yesterday
+				   FROM (
+						SELECT DATE_FORMAT(
+									MIN(measure_date),
+									'%Y/%m/%d %H:%i:00'
+								) AS measure_date, power_consumption, duration
+						FROM dr_power_consume_tbl
+						WHERE	measure_date between date_format(subdate(curdate(),1), '%Y-%m-%d 00:00:00') and date_format(subdate(now(),1), '%Y-%m-%d 23:59:59')
+						GROUP BY ROUND(UNIX_TIMESTAMP(measure_date)/300)
+				   ) t1, (SELECT @ROWNUM := 0) R1
+				   GROUP BY t1.measure_date
+			   ) tt1
+			   LEFT OUTER JOIN
+			   (SELECT @ROWNUM2 := @ROWNUM2 + 1 AS ROWNUM, measure_date, DATE_FORMAT(measure_date, '%T') as measure_time, round(power_consumption,3) as today
+				   FROM (
+						SELECT DATE_FORMAT(
+									MIN(measure_date),
+									'%Y/%m/%d %H:%i:00'
+								) AS measure_date, power_consumption, duration
+						FROM dr_power_consume_tbl
+						WHERE	measure_date between date_format(curdate(), '%Y-%m-%d 00:00:00') and date_format(curdate(), '%Y-%m-%d 23:59:59')
+						GROUP BY ROUND(UNIX_TIMESTAMP(measure_date)/300)
+				   ) t2, (SELECT @ROWNUM2 := 0) R2
+				   GROUP BY t2.measure_date
+			   ) tt2
+			ON tt1.ROWNUM = tt2.ROWNUM
+		) a1
+	</select>
+
+    <!-- 일일 전력 사용량 통계 데이타 저장 -->
+	<insert id="dailyStat_2" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		insert into dr_power_consume_stat
+		(measure_date, power_consumption)
+		values (#{tmp[0].measure_date}, #{tmp[0].power_consumption})
+		on duplicate key update
+		power_consumption = #{tmp[0].power_consumption}
+	</insert>
+
+</mapper>

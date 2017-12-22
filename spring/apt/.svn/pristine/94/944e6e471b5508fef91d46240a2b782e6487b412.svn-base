@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aptCust">
+	<select id="custView_1_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT 
+			'수용가 정보' cust_info,
+			cu_id,
+			kep_cu_id,
+			contract_type,
+			cu_name,
+			kma_zone,
+			gridx,
+			gridy,
+			addr_sido,
+			addr_gu,
+			addr_dong,
+			road_name,
+			b_name,
+			
+			'담당자정보' staff_info,
+			staff_name,
+			staff_tel,
+			staff_mb,
+			staff_email,
+			
+			'기기 정보' device_info,
+			contract_power,
+			supply_type,
+			tran_dt,
+			amr_dt,
+			amr_no,
+			effective_ym,
+			laying_dt,
+			guidelines_digits,
+			factory,
+			amr_owned
+		FROM dr_cust_tbl t1
+	</select>
+	<!-- 수용가 정보 수정 -->
+	<update id="custUpdate_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+			UPDATE dr_cust_tbl
+			SET kep_cu_id = #{kep_cu_id},
+				contract_type = #{contract_type},
+				cu_name = #{cu_name},
+				kma_zone = #{kma_zone},
+				gridx = #{gridx},
+				gridy = #{gridy},
+				addr_sido = #{addr_sido},
+				addr_gu = #{addr_gu},
+				addr_dong = #{addr_dong},
+				road_name = #{road_name},
+				b_name = #{b_name},
+				
+				staff_name = #{staff_name},
+				staff_tel = #{staff_tel},
+				staff_mb = #{staff_mb},
+				staff_email = #{staff_email},
+				
+				contract_power = #{contract_power},
+				supply_type = #{supply_type},
+				tran_dt = #{tran_dt},
+				amr_dt = #{amr_dt},
+				amr_no = #{amr_no},
+				effective_ym = #{effective_ym},
+				laying_dt = #{laying_dt},
+				guidelines_digits = #{guidelines_digits},
+				factory = #{factory},
+				amr_owned = #{amr_owned}
+			WHERE cu_id = ${cu_id}
+	</update>
+	<!-- 스마트미터 목록 -->
+	<select id="custMeterList_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM dr_cust_meter_tbl t1
+	</select>
+	<!-- 스마트미터 상세정보 -->
+	<select id="custMeterEdit_1_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM dr_cust_meter_tbl t1
+		WHERE cu_id = #{cu_id} and device_id = #{device_id}
+	</select>
+	<!-- 스마트미터 정보 수정 -->
+	<update id="custMeterUpdate_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		UPDATE dr_cust_meter_tbl
+		SET 
+			optin = #{optin},
+			dong = #{dong},
+			ho = #{ho}
+		WHERE cu_id = #{cu_id} and device_id = #{device_id}
+	</update>
+	<delete id="custMeterDel_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		DELETE FROM dr_cust_meter_tbl
+		WHERE cu_id = #{cu_id} and device_id = #{device_id}
+	</delete>
+
+</mapper>
+ 

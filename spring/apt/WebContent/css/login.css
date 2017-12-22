@@ -1,0 +1,670 @@
+html,
+body {
+    width: 100%;
+    min-width: 320px;
+    height: 100%;
+}
+body {
+    background: url("../img/login/login_bg.jpg") no-repeat 50% 50%;
+    background-attachment: fixed;
+    background-size: cover;
+}
+/*폰트 적용*/
+@font-face {
+    font-family: 'NanumGothic';
+    src: url("../css/font/NanumGothic.eot");
+    src: url("../css/font/NanumGothic.eot?#iefix") format('embedded-opentype'), url('../css/font/NanumGothic.woff')format('woff'), url("../css/font/NanumGothic.ttf')format('truetype");
+    font-style: normal;
+}
+
+/* body.ko_KR,
+div,
+ul,
+li {
+    font-family: "나눔고딕","NanumGothic","맑은고딕","Malgun Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+} */
+
+body.ko_KR {
+	font-family: "나눔고딕","NanumGothic","맑은고딕","Malgun Gothic", sans-serif;
+	-webkit-font-smoothing: antialiased;
+}
+
+body.en_US {
+	font-family: "Gibson-Regular", Arial, sans-serif !important;
+	-webkit-font-smoothing: antialiased;
+}
+
+body.ja_JP {
+	font-family: "MS P Gothic", Meiryo, sans-serif !important;
+	-webkit-font-smoothing: antialiased;
+}
+
+/*서버에서 폰트를 불러올 때까지 문자열이 깨지는 것을 방지*/
+.page_wrap > header,
+.page_wrap > header .header_inner,
+.page_wrap > header .header_inner h1.top_logo,
+.page_wrap > .container,
+.page_wrap > .container > .content_area > .login_area .box_base {
+    -webkit-transition: all 0.4s;
+    -moz-transition: all 0.4s;
+    -o-transition: all 0.4s;
+    -ms-transition: all 0.4s;
+    transition: all 0.4s;
+}
+
+
+/* PC  *******************************************************************************************/
+.page_wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+}
+/* Header */
+.page_wrap > header {
+    width: 100%;
+    height: 65px;
+    z-index: 10;
+    background: rgba(0,0,0,0.2);
+}
+.page_wrap > header .header_inner {
+    position: relative;
+    max-width: 1220px;
+    height: 65px;
+    padding: 0 10px 0 100px;
+    margin: 0 auto;
+    text-align: left;
+}
+.page_wrap > header .header_inner h1.top_logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 216px;
+    height: 44px;
+    background: url("../img/login/login_top_logo.png") no-repeat 0 50%;
+}
+.page_wrap > header .header_inner h1.top_logo span {
+    font-size: 0;
+    line-height: 0;
+    text-indent: -9999em;
+    color: transparent;
+}
+.page_wrap > header .header_inner .login_menu {
+    width: 100%;
+    height: 65px;
+    text-align: right;
+    font-size: 0;
+    line-height: 0;
+}
+.page_wrap > header .header_inner .login_menu a {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    margin: 10px;
+    padding: 10px 15px;
+}
+.page_wrap > header .header_inner .login_menu a span {
+    font-size: 16px;
+    line-height: 25px;
+    color: #fff;
+}
+/* Container */
+.page_wrap > .container {
+    position: absolute;
+    top: 65px;
+    left: 0;
+    bottom: 80px;
+    width: 100%;
+}
+.page_wrap > .container > .content_area {
+    display: table;
+    width: 100%;
+    height: 100%;
+}
+/* Login Area */
+.page_wrap > .container > .content_area > .login_area {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    padding: 50px 0;
+}
+.page_wrap > .container > .content_area > .login_area .guide {
+    margin-bottom: 40px;
+    padding: 0 10px;
+    color: #fff;
+}
+.page_wrap > .container > .content_area > .login_area .guide h2 {
+    margin-bottom: 15px;
+    font-size: 25px;
+    font-weight: 600;
+    line-height: 32px;
+}
+.page_wrap > .container > .content_area > .login_area .guide p {
+    font-size: 15px;
+    line-height: 23px;
+}
+.page_wrap > .container > .content_area > .login_area .guide .word {
+    color: #656565; 
+   	font-size: 15px; 
+   	font-weight: bold;
+}
+.page_wrap > .container > .content_area > .login_area .box_base {
+    width: 350px;
+    padding: 50px 40px;
+    margin: 0 auto;
+    border-radius: 35px;
+}
+.page_wrap > .container > .content_area > .login_area .box_base form {
+    position: relative;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255,255,255,0.5);
+}
+.page_wrap > .container > .content_area > .login_area .message {
+    margin-top: 25px;
+    font-size: 14px;
+    line-height: 18px;
+    color: #000;
+}
+
+.page_wrap > .container > .content_area > .login_area .error {
+	font-size: 12px;
+	/* color : #FF0000; */
+}
+
+/* Login */
+.page_wrap > .container > .content_area > .login_area .box_login {
+    padding: 0 40px;
+    background: #fff;
+    box-shadow: 1px 0 30px rgba(0,0,0,0.15);
+}
+.page_wrap > .container > .content_area > .login_area .box_login form {
+    position: relative;
+    padding-top: 0;
+    border: 0 none;
+}
+.page_wrap > .container > .content_area > .login_area .box_login legend {
+    position: static;
+    width: 100%;
+    height: 100px;
+    font-size: 0;
+    line-height: 0;
+    text-indent: -9999em;
+    color: transparent;
+    background: url("../img/login/login_center_logo.png") no-repeat center 50%;
+    border-bottom: 1px solid #28bca5;
+}
+.page_wrap > .container > .content_area > .login_area .box_login .selectbox,
+.page_wrap > .container > .content_area > .login_area .box_login fieldset > input {
+    display: block;
+    height: 49px;
+    padding: 0;
+    border: 0 none;
+    border-bottom: 1px solid #dedede;
+    font-size: 18px;
+    font-weight: normal;
+    line-height: 24px;
+    color: #8b8b8b;
+    -webkit-font-smoothing: antialiased;
+}
+.page_wrap > .container > .content_area > .login_area .box_login fieldset > input {
+    width: 330px;
+    padding: 0 10px;
+}
+.page_wrap > .container > .content_area > .login_area .box_login fieldset > input.pw {
+    width: 280px;
+    padding: 0 60px 0 10px;
+}
+.page_wrap > .container > .content_area > .login_area .box_login .login_option {
+    margin: 30px 0;
+    text-align: center;
+}
+
+::i-block-chrome, .login_option {
+   	height:10px;
+}
+
+.page_wrap > .container > .content_area > .login_area .box_login .login_option label {
+    display: inline;
+    font-size: 17px;
+    color: #707070;
+}
+.page_wrap > .container > .content_area > .login_area .box_login .btn_login {
+    position: absolute;
+    top: 193px;
+    right: 0;
+    width: 49px;
+    height: 49px;
+    background: url("../img/login/btn_login.png") no-repeat center 50%;
+    font-size: 0;
+    line-height: 0;
+    text-indent: -9999em;
+    color: transparent;
+}
+.page_wrap > .container > .content_area > .login_area .box_login .selectbox {
+    position: relative;
+    width: 100%;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    outline: 0;
+}
+
+/* download link */
+
+::i-block-chrome, .page_wrap > .container > .content_area > .login_area .box_safari {
+	padding-bottom: 40px;
+}
+
+.page_wrap > .container > .content_area > .login_area .box_login .center_box {
+	position: relative;
+	top : -60px;
+}
+
+::i-block-chrome, .page_wrap > .container > .content_area > .login_area .box_login .center_box {
+	top: 0;
+}
+
+.page_wrap > .container > .content_area > .login_area .box_login .center_box .extensionImage {
+	background-position: center;
+	height: 120px;
+	margin: 0 auto;
+	margin-top: 70px;
+}
+
+.page_wrap > .container > .content_area > .login_area .box_login .center_box .fileInfo {
+	text-align: center;
+}
+
+.page_wrap > .container > .content_area > .login_area .box_login .center_box .fileName {
+	font-weight: bold;
+	word-break : break-all;
+}
+
+.page_wrap > .container > .content_area > .login_area .box_login .button_wrap {
+	text-align: center;
+	margin-top: 45px;
+}
+
+.page_wrap > .container > .content_area > .login_area .box_login .button_wrap .download,
+.page_wrap > .container > .content_area > .login_area .box_login .button_wrap .toMainPage {
+	color: #29B8BD;
+	padding-left: 13px;
+	margin-left: 10px;
+}
+
+/* Setting Box */
+.page_wrap > .container > .content_area > .login_area .box_setting {
+    text-align: center;
+    background: rgba(0,0,0,0.1);
+}
+.page_wrap > .container > .content_area > .login_area .box_setting fieldset > input {
+    display: block;
+    width: 89%;
+    height: 30px;
+    margin: 0 auto 8px;
+    padding: 5px 5%;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.4);
+    font-size: 16px;
+    line-height: 30px;
+    color: #666;
+}
+.page_wrap > .container > .content_area > .login_area .box_setting .btn_action {
+    display: block;
+    width: 50%;
+    height: 46px;
+    margin: 40px auto 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: normal;
+    color: #fff;
+    background: rgba(40,188,165,0.75);
+}
+/* Join */
+.page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl {
+    height: 30px;
+    padding-top: 10px;
+    text-align: left;
+}
+.page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dt,
+.page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dd label,
+.page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dd input {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    height: 20px;
+    line-height: 20px;
+}
+.page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dt {
+    float: left;
+    width: 100px;
+    font-size: 16px;
+}
+.page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dd input {
+    width: auto;
+}
+.page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dd label {
+    padding: 0 15px 0 5px;
+    font-size: 14px;
+    color: rgba(0,0,0,0.75);
+    font-size: 14px;
+    font-weight: normal;
+    color: rgba(0,0,0,0.85);
+    letter-spacing: -0.025em;
+}
+
+body.en_US .page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dd label {
+	padding-right: 1px;
+}
+
+/* Footer */
+.page_wrap footer {
+    width: 100%;
+    height: 20px;
+}
+.page_wrap footer .copyright {
+    width: 100%;
+    font-size: 13px;
+    font-weight: lighter;
+    line-height: 20px;
+    color: #fff;
+    text-align: center;
+}
+/* 태블릿  *******************************************************************************************/
+@media screen and (max-width :1024px) {
+    /* Header */
+    .page_wrap > header {
+        height: 50px;
+    }
+    .page_wrap > header .header_inner {
+        height: 50px;
+        padding: 0 15px;
+    }
+    .page_wrap > header .header_inner h1.top_logo {
+        height: 50px;
+        background-size: auto 30px;
+    }
+    .page_wrap > header .header_inner .login_menu {
+        height: 50px;
+    }
+    .page_wrap > header .header_inner .login_menu a {
+        margin: 6px 10px 5px;
+        padding: 5px 8px;
+    }
+    /* Container */
+    .page_wrap > .container {
+        top: 50px;
+        bottom: 60px;
+    }
+    .page_wrap > .container > .content_area > .login_area {
+        padding: 40px 0;
+    }
+    /* Footer */
+    .page_wrap footer {
+        bottom: 25px;
+    }
+}
+
+@media screen and (max-width :768px) {
+    .page_wrap {
+        min-height: 0 !important;
+    }
+    /* Login Area */
+    .page_wrap > .container > .content_area > .login_area {
+        padding: 35px 0;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide h2 {
+        font-size: 23px;
+        line-height: 29px;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide p {
+        font-size: 15px;
+        line-height: 21px;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide .word {
+	    color: #656565; 
+	   	font-size: 15px; 
+	   	font-weight: bold;
+	}
+    .page_wrap > .container > .content_area > .login_area .box_base {
+        width: 350px;
+        padding: 40px 25px;
+        border-radius: 30px;
+    }
+    /* Login */
+    .page_wrap > .container > .content_area > .login_area .box_login {
+        padding: 0 30px 15px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login form {
+        position: relative;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login legend {
+        height: 110px;
+        background-size: auto 60px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .selectbox,
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input {
+        height: 45px;
+        font-size: 16px;
+        line-height: 20px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input {
+        width: 330px;
+        padding: 0 10px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input.pw {
+        width: 290px;
+        padding: 0 50px 0 10px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .login_option {
+        margin: 20px 0;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .login_option label {
+        font-size: 15px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .btn_login {
+        top: 159px;
+        right: 0;
+        width: 45px;
+        height: 45px;
+    }
+}
+/* 모바일  *******************************************************************************************/
+@media screen and (max-width :600px) {
+    /* Header */
+    .page_wrap > header .header_inner h1.top_logo {
+        width: 50px;
+        height: 50px;
+        background: url("../img/login/img_logo_mobile.png") no-repeat 0 50%;
+    }
+    /* Login Area */
+    .page_wrap > .container > .content_area > .login_area {
+        padding: 20px 0;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide {
+        margin-bottom: 30px;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide h2 {
+        font-size: 21px;
+        line-height: 27px;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide p {
+        font-size: 14px;
+        line-height: 20px;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide .word {
+	    color: #656565; 
+	   	font-size: 14px; 
+	   	font-weight: bold;
+	}
+    .page_wrap > .container > .content_area > .login_area .box_base {
+        width: 320px;
+        padding: 30px 20px;
+        border-radius: 25px;
+    }
+    .page_wrap > header .header_inner .login_menu a {
+        margin: 0 6px;
+        padding: 15px 10px;
+    }
+    .page_wrap > header .header_inner .login_menu a span {
+        font-size: 15px;
+        line-height: 20px;
+        color: #fff;
+    }
+    /* Login */
+    .page_wrap > .container > .content_area > .login_area .box_login legend {
+        height: 90px;
+        background-size: auto 50px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input {
+        width: 300px;
+        padding: 0 10px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input.pw {
+        width: 260px;
+        padding: 0 50px 0 10px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .login_option {
+        margin: 20px 0;
+    }
+    ::i-block-chrome, .login_option {
+	   	height:0;
+	}
+    .page_wrap > .container > .content_area > .login_area .box_login .login_option label {
+        font-size: 15px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .btn_login {
+        top: 139px;
+        right: 0;
+        width: 45px;
+        height: 45px;
+    }
+    /* Search PW */
+    .page_wrap > .container > .content_area > .login_area .box_setting .message {
+        margin-top: 15px;
+        font-size: 13px;
+        line-height: 17px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_setting .btn_action {
+        margin-top: 30px;
+    }
+    /* Join */
+    .page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dt {
+        display: none;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dd label {
+        font-size: 16px;
+    }
+}
+
+@media screen and (max-width :400px) {
+    /* Header */
+    .page_wrap > header {
+        height: 45px;
+    }
+    .page_wrap > header .header_inner {
+        height: 45px;
+        padding: 0 12px;
+    }
+    .page_wrap > header .header_inner h1.top_logo {
+        height: 45px;
+    }
+    .page_wrap > header .header_inner .login_menu {
+        height: 45px;
+    }
+    .page_wrap > header .header_inner .login_menu a {
+        margin: 0;
+        padding: 10px;
+    }
+    .page_wrap > header .header_inner .login_menu a span {
+        font-size: 14px;
+        line-height: 25px;
+    }
+    /* Container */
+    .page_wrap > .container {
+        top: 45px;
+        bottom: 55px;
+    }
+    /* Login Area */
+    .page_wrap > .container > .content_area > .login_area .guide h2 {
+        font-size: 19px;
+        line-height: 25px;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide p {
+        font-size: 13px;
+        line-height: 19px;
+    }
+    .page_wrap > .container > .content_area > .login_area .guide .word {
+	    color: #656565; 
+	   	font-size: 13px; 
+	   	font-weight: bold;
+	}
+    .page_wrap > .container > .content_area > .login_area .box_base {
+        width: 250px;
+    }
+    /* Login */
+    .page_wrap > .container > .content_area > .login_area .box_login {
+        padding: 0 20px 15px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login form {
+        position: relative;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .selectbox,
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input {
+        height: 40px;
+        font-size: 16px;
+        line-height: 20px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input {
+        width: 230px;
+        padding: 0 10px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login fieldset > input.pw {
+        width: 190px;
+        padding: 0 50px 0 10px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .login_option {
+        margin: 20px 0;
+    }
+    ::i-block-chrome, .login_option {
+	   	height:0;
+	}
+    .page_wrap > .container > .content_area > .login_area .box_login .login_option label {
+        font-size: 15px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_login .btn_login {
+        top: 133px;
+        right: 0;
+        width: 40px;
+        height: 40px;
+    }
+    /* Search PW */
+    .page_wrap > .container > .content_area > .login_area .box_setting .message {
+        font-size: 12px;
+        line-height: 16px;
+    }
+    .page_wrap > .container > .content_area > .login_area .box_setting .btn_action {
+        width: 96%;
+        font-size: 16px;
+    }
+    /* Join */
+    .page_wrap > .container > .content_area > .login_area .box_setting > form > fieldset > dl dd label {
+        padding: 0 10px 0 3px;
+        font-size: 14px;
+    }
+    
+    .page_wrap > .container > .content_area > .login_area .box_login .button_wrap .download,
+	.page_wrap > .container > .content_area > .login_area .box_login .button_wrap .toMainPage {
+		margin-right: -8px;
+	}
+    
+}
+
+@media screen and (max-width :360px) {
+    /* Footer */
+    .page_wrap footer .copyright {
+        font-size: 11px;
+        line-height: 17px;
+    }
+}

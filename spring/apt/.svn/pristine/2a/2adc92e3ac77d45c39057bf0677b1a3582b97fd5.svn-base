@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ns7:oadrPayload xmlns:ns7="http://openadr.org/oadr-2.0b/2012/07" xmlns="http://www.w3.org/2000/09/xmldsig#" xmlns:ns10="http://www.opengis.net/gml/3.2" xmlns:ns11="http://docs.oasis-open.org/ns/emix/2011/06/siscale" xmlns:ns12="http://www.w3.org/2009/xmldsig11#" xmlns:ns13="urn:un:unece:uncefact:codelist:standard:5:ISO42173A:2010-04-07" xmlns:ns2="http://docs.oasis-open.org/ns/energyinterop/201110" xmlns:ns3="http://docs.oasis-open.org/ns/energyinterop/201110/payloads" xmlns:ns4="http://docs.oasis-open.org/ns/emix/2011/06" xmlns:ns5="urn:ietf:params:xml:ns:icalendar-2.0" xmlns:ns6="urn:ietf:params:xml:ns:icalendar-2.0:stream" xmlns:ns8="http://www.w3.org/2005/Atom" xmlns:ns9="http://docs.oasis-open.org/ns/emix/2011/06/power">
+	<ns7:oadrSignedObject>
+		<ns7:oadrUpdateReport ns2:schemaVersion="2.0b">
+			<ns3:requestID>${req_id}</ns3:requestID>
+			<ns7:oadrReport>
+				<ns6:intervals>
+					${intervals}
+				</ns6:intervals>
+	
+				<ns2:eiReportID>${reportid_venId}</ns2:eiReportID>
+				<ns2:reportRequestID>${reportrequestid_venId}</ns2:reportRequestID>
+				<ns2:reportSpecifierID>${reportspecifierid_venId}</ns2:reportSpecifierID>
+				<ns2:reportName>TELEMETRY_USAGE</ns2:reportName>
+				<ns2:createdDateTime>${send_date}</ns2:createdDateTime>
+				
+			</ns7:oadrReport>
+			<ns2:venID>${venId}</ns2:venID>
+		</ns7:oadrUpdateReport>
+	</ns7:oadrSignedObject>
+</ns7:oadrPayload>
+__PART__
+<ns2:interval>
+	<ns5:dtstart>
+		<ns5:date-time>${measure_date}</ns5:date-time>
+	</ns5:dtstart>
+	<ns5:duration>
+		<ns5:duration>PT15M</ns5:duration>
+	</ns5:duration>
+	<ns5:uid>
+		<ns5:text>${idx}</ns5:text>
+	</ns5:uid>
+	<ns7:oadrReportPayload>
+		<ns2:rID>${meterid}</ns2:rID>
+		<ns2:payloadFloat>
+			<ns2:value>${power_consumption}</ns2:value>
+		</ns2:payloadFloat>
+	</ns7:oadrReportPayload>
+</ns2:interval>

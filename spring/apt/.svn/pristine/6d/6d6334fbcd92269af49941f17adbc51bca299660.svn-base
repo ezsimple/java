@@ -1,0 +1,15 @@
+.main_layout{
+	 clear: both;margin: 0 auto; padding:1px; width: 100%;border:1px solid #cccccc;
+}
+.hide_mb{
+	display: none;
+}
+.top_menu{
+	float:left;width: 100px; text-align: center;cursor: pointer; background: #111111; color: #ffffff; font-weight: bold;margin-right: 1px; padding:5px;
+}
+.home_tit{
+	text-align: center; background: #747474; color: #ffffff; font-weight: bold; padding:5px;
+}
+.main_tite{
+	text-align: center;  background: #747474; color: #ffffff; font-weight: bold; padding:5px;
+}

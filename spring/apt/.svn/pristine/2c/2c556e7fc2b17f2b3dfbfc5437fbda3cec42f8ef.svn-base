@@ -1,0 +1,784 @@
+<%@ page contentType="text/html; charset=utf-8"%>
+<%@ page language="java" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jstl/fmt_rt"%>
+<%@ taglib prefix="sp" uri="/WEB-INF/tlds/sp.tld"%>
+<%@ taglib prefix="tag"  tagdir="/WEB-INF/tags/tag" %> 
+<%@ taglib prefix="src"  tagdir="/WEB-INF/tags/src" %> 
+<c:set var="context" value="${pageContext.request.contextPath}" />
+<c:if test="${empty context}"><c:set var="context" value="/"/></c:if>
+<!-- src:import로 다중 UI Page Loading 할 수 없다.(SmartAdmin과 충돌) -->
+<src:import uiId="powerCbl_sts" /><!-- CBL 기준 전일 대비 전력 사용량 그래프 -->
+<src:import uiId="powerApt_sts" /><!-- 스마트미터 전력 사용량 그래프 -->
+<src:import uiId="mainTempGraph" /><!-- 날씨정보 -->
+<src:import uiId="mainEvent" /><!-- 이벤트 발령 정보 -->
+
+<section id="widget-grid" class="">
+
+	<!-- row -->
+	<div class="row">
+		
+		<!-- NEW WIDGET START -->
+		<article class="col-xs-12 col-sm-12 col-md-5 col-lg-4">
+			<!-- Widget ID (each widget will need unique ID)-->
+			<div class="jarviswidget" id="wid-id-00"
+              data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+				<!-- widget options:
+					usage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">
+					data-widget-colorbutton="false"	
+					data-widget-editbutton="false"
+					data-widget-togglebutton="false"
+					data-widget-deletebutton="false"
+					data-widget-fullscreenbutton="false"
+					data-widget-custombutton="false"
+					data-widget-collapsed="true" 
+					data-widget-sortable="false"
+				-->
+				<header>
+					<span class="widget-icon"> <i class="fa fa-bell-o"></i> </span>
+					<h2>이벤트 정보</h2>				
+				</header>
+
+				<!-- widget div-->
+				<div>
+					
+					<!-- widget edit box -->
+					<div class="jarviswidget-editbox">
+						<!-- This area used as dropdown edit box -->
+						<input class="form-control" type="text">	
+					</div>
+					<!-- end widget edit box -->
+					
+					<!-- widget content -->
+					<div class="widget-body">
+						
+						<!-- this is what the user will see -->
+						<div class="well" id="has_event" style="width: 100%; display:none; ">
+							<ul class="media-list">
+								<li class="media">
+									<a class="pull-left" href="javascript:void(0);">
+										<img class="media-object" alt="active" id="active_event" src="../images/apt/active-icon.png" style="display:none;">
+										<img class="media-object" alt="far" id="far_event" src="../images/apt/far-icon.png" style="display:none;">
+									</a>
+									<div class="media-body">
+										<h4 class="media-heading btn btn-danger btn-lg">경보발령</h4>
+										<h3 id="event_start_date" style="color: red;"></h3>
+										<h3>상태 : <span id="event_status"></span></h3>
+										<h3>감축량 : <span id="tot_reduction"></span>kW</h3>
+										<h3>지속시간 : <span id="event_duration"></span></h3>
+									</div>
+								</li>
+							</ul>
+						</div>
+						<div id="no_event" style="padding-top: 10px; display:none; ">
+							<div class="alert alert-info no-margin fade in">
+								<button class="close" data-dismiss="alert">×</button>
+								<i class="fa-fw fa fa-table"></i>
+								최근 이벤트
+							</div>
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr>
+											<th>발생 일시</th>
+											<th>감축량</th>
+										</tr>
+									</thead>
+									<tbody>
+										<c:forEach var="row" items="${eventData }" varStatus="status">
+											<c:if test="${!empty row }">
+												<c:set var="event_id" value="${row.event_id }" />
+												<c:set var="status" value="${row.status }" />
+												<c:set var="created_date" value="${row.created_date }" />
+												<c:set var="start_date" value="${row.start_date }" />
+												<c:set var="tot_duration" value="${row.tot_duration }" />
+												<c:set var="tot_reduction" value="${row.tot_reduction }" />
+												<c:set var="event_status" value="${row.event_status }" />
+												<c:set var="test_event" value="${row.test_event }" />
+												<c:set var="signal_name" value="${row.signal_name }" />
+												<c:set var="signal_type" value="${row.signal_type }" />
+												<c:set var="signal_id" value="${row.signal_id }" />
+												<c:set var="sstart_date" value="${row.sstart_date }" />
+												<tr>
+													<td>
+														<fmt:parseDate value='${start_date }' var='start_date' pattern="yyyy-MM-dd HH:mm:ss" scope="page"/>
+														<fmt:formatDate value="${start_date }" type="date" var="start_date" pattern="yyyy-MM-dd HH:mm:ss"/>
+														${start_date }
+													</td>
+													<td>${tot_reduction } kWh</td>
+												</tr>
+											</c:if>
+										</c:forEach>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+					</div>
+					<!-- end widget content -->
+					
+				</div>
+				<!-- end widget div -->
+			</div>
+			<!-- end widget -->
+		</article>
+		<!-- WIDGET END -->
+		
+		<!-- NEW WIDGET START -->
+		<article class="col-xs-12 col-sm-12 col-md-7 col-lg-8">
+			
+			<!-- Widget ID (each widget will need unique ID)-->
+			<div class="jarviswidget" id="wid-id-1"
+            data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+				<!-- widget options:
+					usage: <div class="jarviswidget" id="wid-id-1" data-widget-editbutton="false">
+					
+					data-widget-colorbutton="false"	
+					data-widget-editbutton="false"
+					data-widget-togglebutton="false"
+					data-widget-deletebutton="false"
+					data-widget-fullscreenbutton="false"
+					data-widget-custombutton="false"
+					data-widget-collapsed="true" 
+					data-widget-sortable="false"
+					
+				-->
+				<header>
+					<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>
+					<h2>CBL 기준 전일 대비 전력 사용량 그래프</h2>				
+				</header>
+
+				<!-- widget div-->
+				<div>
+					
+					<!-- widget edit box -->
+					<div class="jarviswidget-editbox">
+						<!-- This area used as dropdown edit box -->
+						<input class="form-control" type="text">	
+					</div>
+					<!-- end widget edit box -->
+					
+					<!-- widget content -->
+					<div class="widget-body">
+						
+						<!-- this is what the user will see -->
+						<div id="noroll" style="width:100%; height:300px;"></div>
+
+					</div>
+					<!-- end widget content -->
+					
+				</div>
+				<!-- end widget div -->
+				
+			</div>
+			<!-- end widget -->
+		</article>
+		<!-- WIDGET END -->
+	</div>
+	<!-- end row -->
+
+	<!-- row -->
+	<div class="row">
+
+		<!-- NEW WIDGET START -->
+		<article class="col-xs-12 col-sm-12 col-md-5 col-lg-4">
+			<!-- Widget ID (each widget will need unique ID)-->
+			<div class="jarviswidget" id="wid-id-2"
+            data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+				<!-- widget options:
+					usage: <div class="jarviswidget" id="wid-id-2" data-widget-editbutton="false">
+					data-widget-colorbutton="false"	
+					data-widget-editbutton="false"
+					data-widget-togglebutton="false"
+					data-widget-deletebutton="false"
+					data-widget-fullscreenbutton="false"
+					data-widget-custombutton="false"
+					data-widget-collapsed="true" 
+					data-widget-sortable="false"
+				-->
+				<header>
+					<span class="widget-icon"> <i class="fa fa-info"></i> </span>
+					<h2>최근 검침 정보</h2>				
+				</header>
+
+				<!-- widget div-->
+				<div>
+					
+					<!-- widget edit box -->
+					<div class="jarviswidget-editbox">
+						<!-- This area used as dropdown edit box -->
+						<input class="form-control" type="text">	
+					</div>
+					<!-- end widget edit box -->
+					
+					<!-- widget content -->
+					<div class="widget-body">
+						
+						<!-- this is what the user will see -->
+						<div class="col-sm-12" >
+
+							<div class="alert alert-block alert-warning">
+								<a class="close" data-dismiss="alert" href="#">×</a>
+								<h4 class="alert-heading">측정 시간</h4>
+								<span id="last_check_time">2015-03-20 10:00:01</span>
+							</div>
+
+							<div class="alert alert-success alert-block">
+								<a class="close" data-dismiss="alert" href="#">×</a>
+								<h4 class="alert-heading">당일 사용량</h4>
+								<span id="today_value"></span>kWh
+							</div>
+
+							<div class="alert alert-info alert-block">
+								<a class="close" data-dismiss="alert" href="#">×</a>
+								<h4 class="alert-heading">미터기</h4>
+								<span id="meter_cnt">0</span>개
+							</div>
+
+
+						</div>
+
+					</div>
+					<!-- end widget content -->
+					
+				</div>
+				<!-- end widget div -->
+			</div>
+			<!-- end widget -->
+		</article>
+		<!-- WIDGET END -->
+		<!-- NEW WIDGET START -->
+		<article class="col-xs-12 col-sm-12 col-md-7 col-lg-8">
+			<!-- Widget ID (each widget will need unique ID)-->
+			<div class="jarviswidget" id="wid-id-3"
+            data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+				<!-- widget options:
+					usage: <div class="jarviswidget" id="wid-id-3" data-widget-editbutton="false">
+					
+					data-widget-colorbutton="false"	
+					data-widget-editbutton="false"
+					data-widget-togglebutton="false"
+					data-widget-deletebutton="false"
+					data-widget-fullscreenbutton="false"
+					data-widget-custombutton="false"
+					data-widget-collapsed="true" 
+					data-widget-sortable="false"
+					
+				-->
+				<header>
+					<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>
+					<h2>스마트미터 전력 사용량 그래프</h2>				
+					
+				</header>
+
+				<!-- widget div-->
+				<div>
+					
+					<!-- widget edit box -->
+					<div class="jarviswidget-editbox">
+						<!-- This area used as dropdown edit box -->
+						<input class="form-control" type="text">	
+					</div>
+					<!-- end widget edit box -->
+					
+					<!-- widget content -->
+					<div class="widget-body">
+						<!-- this is what the user will see -->
+						<div id="roll14" style="width:100%; height:300px;"></div>
+
+					</div>
+					<!-- end widget content -->
+					
+				</div>
+				<!-- end widget div -->
+				
+			</div>
+			<!-- end widget -->
+		</article>
+		<!-- WIDGET END -->
+	</div>
+	<!-- end row -->
+
+	<!-- row -->
+	<div class="row">
+
+		<!-- NEW WIDGET START -->
+		<article class="col-xs-12 col-sm-12 col-md-5 col-lg-4">
+			<!-- Widget ID (each widget will need unique ID)-->
+			<div class="jarviswidget" id="wid-id-44" 
+            data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+				<!-- widget options:
+					usage: <div class="jarviswidget" id="wid-id-2" data-widget-editbutton="false">
+					data-widget-colorbutton="false"	
+					data-widget-editbutton="false"
+					data-widget-togglebutton="false"
+					data-widget-deletebutton="false"
+					data-widget-fullscreenbutton="false"
+					data-widget-custombutton="false"
+					data-widget-collapsed="true" 
+					data-widget-sortable="false"
+				-->
+				<header>
+					<ul class="nav nav-tabs pull-left in">
+						<li class="active">
+							<a data-toggle="tab" href="#hb1"> <i class="fa fa-bolt"></i> <span> 한전 </span> </a>
+						</li>
+					</ul>
+				</header>
+
+				<!-- widget div-->
+				<div>
+
+					<!-- widget edit box -->
+					<div class="jarviswidget-editbox">
+						<!-- This area used as dropdown edit box -->
+					</div>
+					<!-- end widget edit box -->
+
+					<!-- widget content -->
+					<div class="widget-body">
+
+						<div class="tab-content">
+							<div class="tab-pane active" id="hb1">
+
+								<div class="tabbable tabs-below">
+									<div class="tab-content padding-10 text-center">
+										<div class="tab-pane active" style="overflow:auto;" id="A1"></div>
+										<div class="tab-pane widget-body" id="B1">
+                                            <canvas id="doughnutChart" height="170" width="170"></canvas>
+                                            <style>
+                                                .donut-inner { margin-top: -115px; margin-bottom: 70px; }
+                                                .donut-inner h5 { margin-bottom: 5px; margin-top: 0; font-weight: bold; color : #A65858; }
+                                                .donut-inner span {font-size: 16px; font-weight: bold; color : #A65858;}
+                                            </style>
+                                            <div class="donut-inner">
+                                                <h5 id="peak_title"></h5>
+                                                <span id="peak_time"></span>
+                                            </div>
+                                        </div>
+										<div class="tab-pane" id="C1"></div>
+									</div>
+									<ul class="nav nav-tabs">
+										<li class="active pull-left">
+											<a data-toggle="tab" href="#A1"><i class="fa fa-crop text-success"></i>예보</a>
+										</li>
+										<li class="pull-left">
+											<a data-toggle="tab" href="#B1"><i class="fa fa-crop text-primary"></i>피크</a>
+										</li>
+										<li class="pull-left">
+											<a data-toggle="tab" href="#C1"><i class="fa fa-crop text-warning"></i>예비</a>
+										</li>
+									</ul>
+								</div>
+
+							</div>
+
+						</div>
+
+					</div>
+					<!-- end widget content -->
+
+				</div>
+				<!-- end widget div -->
+
+			</div>
+			<!-- end widget -->
+			<div id="kpe_page" style="display:none;"></div>
+		</article>
+		<!-- WIDGET END -->
+		<!-- NEW WIDGET START -->
+		<article class="col-xs-12 col-sm-12 col-md-7 col-lg-8">
+
+			<!-- Widget ID (each widget will need unique ID)-->
+			<div class="jarviswidget" id="wid-id-5" 
+              data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+				<!-- widget options:
+					usage: <div class="jarviswidget" id="wid-id-4" data-widget-editbutton="false">
+					
+					data-widget-colorbutton="false"	
+					data-widget-editbutton="false"
+					data-widget-togglebutton="false"
+					data-widget-deletebutton="false"
+					data-widget-fullscreenbutton="false"
+					data-widget-custombutton="false"
+					data-widget-collapsed="true" 
+					data-widget-sortable="false"
+					
+				-->
+				<header>
+					<span class="widget-icon"> <i class="fa fa-cloud"></i> </span>
+					<c:set var="weather_area" value="${weatherData[0].kma_name }"/>
+					<h2>일기예보 (<c:out value="${weather_area }"/>)</h2>				
+					
+				</header>
+
+				<!-- widget div-->
+				<div>
+					
+					<!-- widget edit box -->
+					<div class="jarviswidget-editbox">
+						<!-- This area used as dropdown edit box -->
+						<input class="form-control" type="text">	
+					</div>
+					<!-- end widget edit box -->
+					
+					<!-- widget content -->
+					<div class="widget-body">
+						<!-- this is what the user will see -->
+						<ul class="bs-glyphicons">
+							<c:forEach var="row" items="${weatherData}" varStatus="status">
+								<c:if test="${!empty row }">
+									<li class="btn btn-default" rel="tooltip" data-placement="top" data-original-title="<h1>${row.wfkor }</h1>" data-html="true">
+										<c:if test="${row.istoday }">
+											<span class="glyphicon wi wi-${row.wicon }"></span> 
+											<span class="glyphicon-class">${row.wtime_hour }시 ${row.temp }<i class="wi wi-celsius" /> </span>
+										</c:if>
+										<c:if test="${not row.istoday }">
+											<span class="glyphicon glyphicon-tomorow wi wi-${row.wicon }"></span> 
+											<span class="glyphicon-tomorow">${row.wtime_hour }시 ${row.temp }<i class="wi wi-celsius" /> </span>
+										</c:if>
+									</li>
+								</c:if>
+							</c:forEach>
+						</ul>
+
+					</div>
+					<!-- end widget content -->
+					
+				</div>
+				<!-- end widget div -->
+				
+			</div>
+			<!-- end widget -->
+
+		</article>
+		<!-- WIDGET END -->
+		
+	</div>
+	<!-- end row -->
+
+	<!-- row -->
+	<div class="row">
+
+		<%--<!-- a blank row to get started -->--%>
+		<%--<div class="col-xs-12 col-sm-12">--%>
+			<%--<!-- your contents here -->--%>
+			<%--<form id="form_" action="" method="post" enctype="multipart/form-data">--%>
+				<%--<input type="hidden" name="ui_id" value="../-at-lo-pg/-home/.sh">--%>
+			<%--</form>--%>
+			<%--<a href="javascript:reDashBoard();">가자</a>--%>
+		<%--</div>--%>
+			
+	</div>
+	<!-- end row -->
+
+</section>
+<!-- end widget grid -->
+<!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
+
+<!-- SmartChat UI : plugin -->
+<script src="../js/plugin/chartjs/chart.min.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        /* DO NOT REMOVE : GLOBAL FUNCTIONS!
+         *
+         * pageSetUp(); WILL CALL THE FOLLOWING FUNCTIONS
+         *
+         * // activate tooltips
+         * $("[rel=tooltip]").tooltip();
+         *
+         * // activate popovers
+         * $("[rel=popover]").popover();
+         *
+         * // activate popovers with hover states
+         * $("[rel=popover-hover]").popover({ trigger: "hover" });
+         *
+         * // activate inline charts
+         * runAllCharts();
+         *
+         * // setup widgets
+         * setup_widgets_desktop();
+         *
+         * // run form elements
+         * runAllForms();
+         *
+         ********************************
+         *
+         * pageSetUp() is needed whenever you load a page.
+         * It initializes and checks for all basic elements of the page
+         * and makes rendering easier.
+         *
+         */
+
+        pageSetUp();
+
+        /*
+         * ALL PAGE RELATED SCRIPTS CAN GO BELOW HERE
+         * eg alert("my home function");
+         *
+         * var pagefunction = function() {
+         *   ...
+         * }
+         * loadScript("js/plugin/_PLUGIN_NAME_.js", pagefunction);
+         *
+         * TO LOAD A SCRIPT:
+         * var pagefunction = function (){
+         *  loadScript(".../plugin.js", run_after_loaded);
+         * }
+         *
+         * OR
+         *
+         * loadScript(".../plugin.js", run_after_loaded);
+         */
+        var g1, g2;
+
+        var pagefunction = function (){
+
+            // loadScript("../js/plugin/dygraphs/demo-data.min.js", draw_g_1);
+
+            var cblData = function() { return "${cblData }"; }
+            var meterData = function() { return "${meterData }"; }
+
+            function draw_g_1() {
+                g1 = new Dygraph(document.getElementById("noroll"), cblData, {
+                    showRoller : true,
+                    customBars : false,
+                    ylabel : '전력사용량 (kWh)',
+                    legend : 'always',
+                    labelsDivStyles : {
+                        'textAlign' : 'right'
+                    },
+					colors: ["#2ca02c", "#9467bd", "#d62728"],
+                    showRangeSelector : true,
+                    rangeSelectorHeight : 30,
+                    rangeSelectorPlotStrokeColor : 'green',
+                    rangeSelectorPlotFillColor : 'lightgreen'
+                });
+
+                g2 = new Dygraph(document.getElementById("roll14"), meterData, {
+                    showRoller : true,
+                    customBars : false,
+                    ylabel : '전력사용량 (Wh)',
+                    legend : 'always',
+                    labelsDivStyles : {
+                        'textAlign' : 'right'
+                    },
+					colors: ["#1f77b4", "#ff7f0e"],
+                    fillGraph: true,
+                    showRangeSelector : true,
+                    rangeSelectorHeight : 30,
+                    rangeSelectorPlotStrokeColor : 'green',
+                    rangeSelectorPlotFillColor : 'lightgreen',
+                    // sigFigs:2
+                });
+            }
+            draw_g_1();
+        }
+
+
+        // destroy generated instances
+        // pagedestroy is called automatically before loading a new page
+        // only usable in AJAX version!
+
+        var pagedestroy = function(){
+
+            //destroy dygraphs
+            g1.destroy();
+            g1=null;
+
+            g2.destroy();
+            g2=null;
+
+            if (debugState){
+                root.console.log("✔ Dygraphs destroyed");
+            }
+        }
+
+        // end destroy
+        loadScript("../js/plugin/dygraphs/dygraph-combined-dev.js", pagefunction);
+
+
+        // DOUGNUT CHART
+
+        // render chart
+        Chart.defaults.global.tooltipTemplate = "";
+        var ctx = $("#doughnutChart").get(0).getContext("2d");
+
+
+        // END DOUGHNUT CHART
+
+        function trim(v) {
+            v = v.replace(/\s+/, "");//왼쪽 공백제거
+            v = v.replace(/\s+$/g, "");//오른쪽 공백제거
+            v = v.replace(/\n/g, "");//행바꿈제거
+            v = v.replace(/\r/g, "");//엔터제거
+            v = v.replace(/  /g,"");
+            return v;
+        }
+
+		var scheme = '<c:out value="${pageContext.request.scheme }"/>';
+
+        $('#kpe_page').load('../parse.sh?url=http://www.kpx.or.kr/www/contents.do?key=216', {}, function(a,b,c){
+            var v;
+            var tmpDiv = $('<div id="tmpDiv" style="display:none" />');
+            var html = $('div[class=level]').html();
+			$('#A1').append(html);
+            $('#A1 img').attr('width','200px');
+
+            v = $('div[class=elec_box_01]').html();
+            $(tmpDiv).append($(v));
+            $('body').append(tmpDiv);
+            var t = $(tmpDiv).find('.elec_title').first().text();
+			var t2 = $('[class^=et_]').first().text();
+            t2 = trim(t2);
+            $('#tmpDiv').remove();
+            html='<div class="alert alert-danger fade in">'
+                    +'<p><span class="pull-left"><i class="fa-fw fa fa-info"></i>'
+                    +'<strong>'+t+'&nbsp;&nbsp;:&nbsp;&nbsp;</strong></span>'
+                    +'<span class="text-center font-md"><strong>'+t2+'</strong></span>'
+                    +'</p></div>';
+            // $('#B1').append(html);
+
+            var st = parseInt(t2.split(" ")[0].replace("시",""));
+            var et = parseInt(t2.split(" ")[2].replace("시",""));
+
+            var s1 = st - 12;
+            var s2 = et - st;
+            var s3 = 24 - et;
+            // console.log(s1+","+s2+","+s3);
+            var doughnutData = [
+                {
+                    value: 6,
+                    color:"rgba(220,220,220,0.7)",
+                    highlight: "rgba(220,220,220,0.7)",
+                },
+                {
+                    value: 1,
+                    color: "rgba(166,88,88,1)",
+                    highlight: "rgba(166,88,88,0.8)",
+                    label: "피크"
+                },
+                {
+                    value: 5,
+                    color: "rgba(220,220,220,0.7)",
+                    highlight: "rgba(220,220,220,0.7)",
+                }
+            ];
+            doughnutData[0].value = s1;
+            doughnutData[1].value = s2;
+            doughnutData[2].value = s3;
+
+            $('#peak_title').text(t);
+            $('#peak_time').text(t2);
+            new Chart(ctx).Doughnut(doughnutData, {
+                animation:true,
+                responsive: false,
+                showTooltips: false,
+                percentageInnerCutout : 70,
+                segmentShowStroke : false,
+            });
+
+            v =  $('div[class=elec_box_02]').html();
+            $(tmpDiv).append($(v));
+            $('body').append(tmpDiv);
+            var maxElec = $(tmpDiv).find('.figure').first().text(); // 최대전력
+            var resElec = $(tmpDiv).find('.figure').last().text();  // 예비전력
+            $('#tmpDiv').remove();
+            var percent1 = (parseInt(maxElec.replace(',', '')) / 10000) * 100;
+            var percent2 = resElec.split('(')[1].split('%')[0];
+            var maxGraph = '<p><span class="text-info font-md pull-left"><strong>최대전력</strong>&nbsp;&nbsp;</span>'
+                    +'<div class="progress">'
+                    +'<div class="progress-bar bg-color-blue" aria-valuetransitiongoal="'+percent1+'" aria-valuenow="'+percent1+'" style="width: '+percent1+'%;">'+maxElec+'</div>'
+                    +'</div></p>';
+            var resGraph = '<p><span class="text-danger font-md pull-left"><strong>예비전력</strong>&nbsp;&nbsp;</span>'
+                    + '<div class="progress">'
+                    +'<div class="progress-bar bg-color-redLight" aria-valuetransitiongoal="'+percent2+'" aria-valuenow="'+percent2+'" style="width: '+percent2+'%;">'+resElec+'</div>'
+                    +'</div>';
+            var unit = '<p><span class="txt-color-black pull-right">(단위 : 만kW)</span></p><br>';
+            html = maxGraph + resGraph + unit;
+            $('#C1').append(html);
+
+            $('#kpe_page').html('');
+        });
+            
+		function animate_event() {
+			$('#active_event').animate({opacity:0},1000);
+			$('#active_event').animate({opacity:1},1000);
+		}
+
+        var intervalID;
+        //이벤트 로딩
+        function loadEvent(){
+            $.getJSON( "../ai/aptEvent.curentEvent", function( data ) {
+                $('#has_event').hide();
+                $('#no_event').hide();
+                $('#far_event').hide();
+                if(data.row.event_status){
+                    if(data.row.event_status.toLowerCase()=='active'){
+                        $('#active_event').show();
+                        clearInterval(intervalID);
+                        intervalID = setInterval(animate_event,1000);
+                    }else{
+                        // $('#active_event').hide();
+                        $('#far_event').show();
+                    }
+                    $('#event_status').text(data.row.event_status=='active' ? '진행중' : '이벤트 발령');
+                    $('#event_start_date').text(data.row.start_date);
+                    $('#tot_reduction').text(data.row.tot_reduction);
+                    $('#event_duration').text(data.row.tot_duration + ' 분');
+                    // $('#no_event').hide();
+                    $('#has_event').show();
+                }else{
+                    // $('#has_event').hide();
+                    $('#no_event').show();
+                }
+            });
+        }
+        loadEvent();
+            // $('#no_event').hide();
+			// $('#has_event').show();
+			// $('#no_event').hide();
+			// $('#far_event').hide();
+        //검침정보 로딩
+        function loadIoem(){
+            $.getJSON( "../ai/aptPower.main", function( data ) {
+                $('#last_check_time').text(data.row.measure_date);
+                $('#today_value').text(data.row.today_value);
+                $('#meter_cnt').text(data.row.meter_cnt);
+            });
+        }
+        loadIoem();
+
+
+        var tId = -1;
+        var reDashBoard = function() {
+            <%
+                // var url = $('#mDashBoard').attr('href');
+                // window.location.hash = url;
+                // window.location.reload();
+            %>
+            if (tId != -1) { clearTimeout(tId); tId = -1; }
+            $('#widget-grid').load('../-at-lo-pg/-home.sh')
+        }
+        var tv = (5* 60 * 1000) <%//한전정보 읽을시 주의 : 1분 간격은 socketTimeOut 발생 %>
+        tId = setTimeout (reDashBoard, tv);
+    });
+</script>
+<style>
+/*
+* Glyphicons
+*
+* Special styles for displaying the icons and their classes in the docs.
+*/
+.bs-glyphicons { padding-left: 0; padding-bottom: 1px; margin-bottom: 20px; list-style: none; overflow: hidden; }
+.bs-glyphicons li { float: left; width: 25%; height: 115px; padding: 10px; margin: 0 -1px -1px 0; font-size: 12px; line-height: 1.4; text-align: center; border: 1px solid #ddd; }
+.glyphicon { margin-top: 5px; margin-bottom: 10px; font-size: 55px !important; }
+.bs-glyphicons .glyphicon-class { display: block; text-align: center; }
+.bs-glyphicons .glyphicon-tomorow { display: block; text-align: center; color : #9667a2 !important; }
+.bs-glyphicons li:hover { background-color: rgba(86,61,124,.1); }
+@media (min-width: 768px) { .bs-glyphicons li { width: 12.5%; } }
+</style>

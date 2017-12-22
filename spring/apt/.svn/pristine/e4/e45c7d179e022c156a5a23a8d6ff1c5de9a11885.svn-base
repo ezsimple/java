@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aptPower">
+	<select id="power_1_last"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select max(measure_date) as day from dr_power_consume_tbl
+	</select>
+	<!-- 전일대비 전력사용량 5분단위로 집계-->
+	<select id="power_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT concat(DATE_FORMAT(now(), '%Y/%m/%d'),' ',tt1.measure_time) as measure_time, today, yesterday
+		FROM (SELECT @ROWNUM := @ROWNUM + 1 AS ROWNUM, measure_date ,DATE_FORMAT(measure_date, '%T') as measure_time, round(power_consumption,3) as yesterday
+			   FROM (
+							SELECT DATE_FORMAT(
+										MIN(measure_date),
+										'%Y/%m/%d %H:%i:00'
+									) AS measure_date, power_consumption, duration
+							FROM dr_power_consume_tbl
+							WHERE	measure_date between date_format(subdate(curdate(),1), '%Y-%m-%d 00:00:00') and date_format(subdate(curdate(),1), '%Y-%m-%d 23:59:59')
+							GROUP BY ROUND(UNIX_TIMESTAMP(measure_date)/300)
+			   ) t1, (SELECT @ROWNUM := 0) R1
+			   GROUP BY t1.measure_date
+		   ) tt1
+		   LEFT OUTER JOIN
+		   (SELECT @ROWNUM2 := @ROWNUM2 + 1 AS ROWNUM, measure_date, DATE_FORMAT(measure_date, '%T') as measure_time, round(power_consumption,3) as today
+			   FROM (
+							SELECT DATE_FORMAT(
+										MIN(measure_date),
+										'%Y/%m/%d %H:%i:00'
+									) AS measure_date, power_consumption, duration
+							FROM dr_power_consume_tbl
+							WHERE	measure_date between date_format(curdate(), '%Y-%m-%d 00:00:00') and date_format(curdate(), '%Y-%m-%d 23:59:59')
+							GROUP BY ROUND(UNIX_TIMESTAMP(measure_date)/300)
+			   ) t2, (SELECT @ROWNUM2 := 0) R2
+			   GROUP BY t2.measure_date
+		   ) tt2
+		ON tt1.ROWNUM = tt2.ROWNUM
+    </select>
+ 	<!-- 메인 스마트미터 최근 검침상태 정보 -->
+ 	<select id="main_1_last" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+ 		select max(measure_date) as day from dr_power_consume_tbl
+ 	</select>
+	<select id="main_2_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT count(*) meter_cnt, max(measure_date) measure_date, round(sum(today_value),2) as today_value, 
+			if(max(measure_date) > DATE_SUB(#{last[0].day }, INTERVAL 10 MINUTE), 'OK', 'ERR') ioem_status
+		FROM (
+			SELECT device_id, DATE_FORMAT(max(measure_date), '%Y-%m-%d %H:%i:%s') measure_date, sum(power_consumption) today_value
+			FROM dr_power_consume_tbl 
+			WHERE measure_date >= DATE(#{last[0].day })
+			GROUP BY device_id
+		) t1
+ 	</select>
+ 	<!-- 스마트미터 검침 조회 -->
+	<!-- 
+		주의 : 추후 전품연과 연동이 된다면 
+			(select measure_date from dr_power_consume_tbl order by measure_date desc limit 1) ==> now()로 바꾸어야 합니다.
+	 -->
+	<select id="powerList_1_last" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select max(measure_date) as day from dr_power_consume_tbl
+	</select>
+	<select id="powerList_2_danzi" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		select dong from dr_cust_meter_tbl where dong is not null and dong != '' group by dong asc
+	</select>
+	<select id="powerList_3_hosu" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+        select ho from dr_cust_meter_tbl
+        where ho is not null and ho != ''
+        <if test="search_dong == null or search_dong == ''">
+            and dong = #{danzi[0].dong }
+        </if>
+        <if test="search_dong != null and search_dong != ''">
+            and dong = #{search_dong}
+        </if>
+        group by ho asc
+	</select>
+	<select id="powerList_4_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT SQL_CALC_FOUND_ROWS t1.device_id,t1.measure_date,t1.device_type,t1.duration,t1.power_consumption,t1.ioe_m_ip,t1.device_cd,t1.optin,t2.dong,t2.ho
+		FROM dr_power_consume_tbl t1, dr_cust_meter_tbl t2
+		WHERE
+			t1.device_id = t2.device_id
+		    <if test="search_dong == null or search_dong == ''">
+		    	and t2.dong = ${danzi[0].dong}
+			</if>
+			<if test="search_dong != null and search_dong != ''">
+		    	and t2.dong = #{search_dong}
+			</if>
+			<if test="search_ho == null or search_ho == ''">
+				and t2.ho = ${hosu[0].ho}
+			</if>
+			<if test="search_ho != null and search_ho != ''">
+				and t2.ho = #{search_ho}
+			</if>
+			<if test="search_measure_date == null or search_measure_date == ''">
+				and measure_date between date_format(date(#{last[0].day }), '%Y-%m-%d 00:00:00') and date_format(date(#{last[0].day }), '%Y-%m-%d 23:59:59')
+			</if>
+			<if test="search_measure_date != null and search_measure_date != ''">
+				and measure_date between date_format(date(#{search_measure_date}), '%Y-%m-%d 00:00:00') and date_format(date(#{search_measure_date}), '%Y-%m-%d 23:59:59')
+			</if>
+			<if test="search_optin != null and search_optin != ''">
+				and  optin = #{search_optin}
+			</if>
+			<if test="search_device_id != null and search_device_id != ''">
+				and  device_id = #{search_device_id}
+			</if>
+			<if test="search_device_cd != null and search_device_cd != ''">
+				and  device_cd = #{search_device_cd}
+			</if>
+		ORDER BY measure_date desc
+		LIMIT ${_start==null ? 0 : _start} , ${_rows==null  ? 21000 : _rows}
+	</select>
+	<!-- 레코드 갯수 -->
+	<select id="powerList_5_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT FOUND_ROWS() cnt, ${_start==null ? 0 : _start} _start, ${_rows==null  ? 1000 : _rows} _rows
+	</select>
+	<!-- 일일 동/호별 5분주기 전력사용량 그래프 데이타 -->
+	<select id="powerList_6_daily"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+        SELECT DATE_FORMAT(MIN(measure_date), '%Y/%m/%d %H:%i:00') AS measure_time,
+		round(power_consumption,5) as power_consumption
+        FROM dr_power_consume_tbl t1, dr_cust_meter_tbl t2
+		where t1.device_id = t2.device_id
+		<if test="search_measure_date != null and search_measure_date != ''">
+			and t1.measure_date between date_format(date(#{search_measure_date}), '%Y-%m-%d 00:00:00') and date_format(date(#{search_measure_date}), '%Y-%m-%d 23:59:59')
+		</if>
+		<if test="search_measure_date == null or search_measure_date == ''">
+			and t1.measure_date between date_format(date(#{last[0].day }), '%Y-%m-%d 00:00:00') and date_format(date(#{last[0].day }), '%Y-%m-%d 23:59:59')
+		</if>
+		<if test="search_dong == null or search_dong == ''">
+			and t2.dong = ${danzi[0].dong}
+		</if>
+		<if test="search_dong != null and search_dong != ''">
+			and t2.dong = #{search_dong}
+		</if>
+		<if test="search_ho == null or search_ho == ''">
+			and t2.ho = ${hosu[0].ho}
+		</if>
+		<if test="search_ho != null and search_ho != ''">
+			and t2.ho = #{search_ho}
+		</if>
+		GROUP BY ROUND(UNIX_TIMESTAMP(t1.measure_date)/(5*60))
+	</select>
+    <!-- 월별 동/호별 전력사용량 그래프 데이타 -->
+    <select id="powerList_7_monthly"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+        select aa1.ym as ym, IFNULL(aa2.power_consumption,0) as power_consumption
+        from
+        (select
+        <if test="search_measure_date != null and search_measure_date != ''">
+        CONCAT(YEAR(#{search_measure_date}),'-', LPAD(a1.mm,2,0)) as ym,
+        </if>
+        <if test="search_measure_date == null or search_measure_date == ''">
+        CONCAT(YEAR(#{last[0].day }),'-', LPAD(a1.mm,2,0)) as ym,
+        </if>
+        '0' as power_consumption,
+		'0' as duration
+        from
+        (
+            select '01' as mm
+            union select '02'
+            union select '03'
+            union select '04'
+            union select '05'
+            union select '06'
+            union select '07'
+            union select '08'
+            union select '09'
+            union select '10'
+            union select '11'
+            union select '12'
+        )a1)aa1
+        left join
+        (SELECT CONCAT(YEAR(t1.measure_date), '-', LPAD(MONTH(t1.measure_date),2,0)) as ym,
+		t1.power_consumption, 1 as duration
+		FROM dr_power_consume_month_tbl t1, dr_cust_meter_tbl t2
+		where t1.device_id = t2.device_id
+        <if test="search_measure_date != null and search_measure_date != ''">
+            and t1.measure_date between concat(year(#{search_measure_date}),'-','01-01') and concat(year(#{search_measure_date}),'-','12-31')
+        </if>
+        <if test="search_measure_date == null or search_measure_date == ''">
+            and t1.measure_date between concat(year(#{last[0].day }),'-','01-01') and concat(year(#{last[0].day }),'-','12-31')
+        </if>
+        <if test="search_dong == null or search_dong == ''">
+            and t2.dong = ${danzi[0].dong}
+        </if>
+        <if test="search_dong != null and search_dong != ''">
+            and t2.dong = #{search_dong}
+        </if>
+        <if test="search_ho == null or search_ho == ''">
+            and t2.ho = ${hosu[0].ho}
+        </if>
+        <if test="search_ho != null and search_ho != ''">
+            and t2.ho = #{search_ho}
+        </if>
+        GROUP BY ym) aa2
+        on aa1.ym = aa2.ym
+    </select>
+</mapper>
+ 

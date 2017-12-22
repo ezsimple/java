@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aptEvent">
+	<!-- 이벤트 조회 -->
+	<select id="eventSearch_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT event_id,
+			 CASE event_status WHEN 'active' THEN 1 WHEN 'near' THEN 2 WHEN 'far' THEN 3 ELSE 4 END status,
+			 created_date,start_date,tot_duration,tot_reduction,event_status,test_event,signal_name,signal_type,signal_id, start_date sstart_date
+		FROM dr_event_rcv_tbl 
+		WHERE 1=1 
+			<if test="search_sstart_date!=null and search_sstart_date!=''">
+				and  start_date between DATE(#{search_sstart_date}) and DATE_ADD(DATE(#{search_sstart_date}), INTERVAL 1 DAY)
+			</if>
+			<if test="search_event_id!=null and search_event_id!=''">
+				and  event_id = #{search_event_id} 
+			</if>
+			<if test="search_event_status!=null and search_event_status!=''">
+				and  event_status = #{search_event_status} 
+			</if>
+		ORDER BY status, start_date desc
+	</select>
+	<!-- 레코드 갯수 -->
+	<select id="eventSearch_2_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT FOUND_ROWS() cnt, ${_start==null ? 0 : _start} _start, ${_rows==null  ? 20 : _rows} _rows
+	</select>
+	<!-- 이벤트 상세정보 -->
+	<select id="event_1_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM dr_event_rcv_tbl 
+		WHERE event_id = #{event_id}
+	</select>
+	<!-- 메인 종결된 이벤트 -->
+	<select id="eventMain_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT event_id,
+			 CASE event_status WHEN 'active' THEN 1 WHEN 'near' THEN 2 WHEN 'far' THEN 3 ELSE 4 END status,
+			 created_date,start_date,tot_duration,tot_reduction,event_status,test_event,signal_name,signal_type,signal_id, start_date sstart_date
+		FROM dr_event_rcv_tbl 
+		ORDER BY start_date desc
+		LIMIT 0, 5
+	</select>
+	<!-- 메인 진행중인 이벤트 -->
+	<select id="curentEvent_1_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT SQL_CALC_FOUND_ROWS event_id,
+			 CASE event_status WHEN 'active' THEN 1 WHEN 'near' THEN 2 WHEN 'far' THEN 3 ELSE 4 END status,
+			 created_date, DATE_FORMAT(start_date, '%Y-%m-%d %T') start_date,tot_duration,tot_reduction,event_status,test_event,signal_name,signal_type,signal_id, start_date sstart_date
+		FROM dr_event_rcv_tbl 
+		WHERE event_status &lt;> 'cancelled'
+		ORDER BY status, start_date desc
+	</select>
+	<!-- 이벤트 조회 -->
+	<select id="eventSearchCtl_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT event_id,
+			 CASE event_status WHEN 'active' THEN 1 WHEN 'near' THEN 2 WHEN 'far' THEN 3 ELSE 4 END status,
+			 created_date,start_date,tot_duration,tot_reduction,event_status,test_event,signal_name,signal_type,signal_id, start_date sstart_date, meter_ctl_snd_date
+		FROM dr_event_rcv_tbl 
+		WHERE meter_ctl_snd_date is not null 
+			<if test="search_sstart_date!=null and search_sstart_date!=''">
+				and  start_date between DATE(#{search_sstart_date}) and DATE_ADD(DATE(#{search_sstart_date}), INTERVAL 1 DAY)
+			</if>
+			<if test="search_event_id!=null and search_event_id!=''">
+				and  event_id = #{search_event_id} 
+			</if>
+			<if test="search_event_status!=null and search_event_status!=''">
+				and  event_status = #{search_event_status} 
+			</if>
+		ORDER BY status, start_date desc
+	</select>
+	<!-- 레코드 갯수 -->
+	<select id="eventSearchCtl_2_#cnt"  parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT FOUND_ROWS() cnt, ${_start==null ? 0 : _start} _start, ${_rows==null  ? 20 : _rows} _rows
+	</select>
+	<!-- 이벤트의 기기제어 정보 -->
+	<select id="eventCtl_1_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT t1.event_id,t1.cu_id,t1.device_id,t1.optin ctl_value, device_cd,dong,ho
+		FROM dr_event_meter_ctl_tbl t1
+		LEFT JOIN dr_cust_meter_tbl t2 ON t1.cu_id = t2.cu_id and t1.device_id = t2.device_id
+		WHERE t1.event_id = #{event_id}
+	</select>
+
+	<!-- 제어 정보 전송을 위한 시작인 이벤트 정보 조회    -->
+	<select id="ctlEvent_1_#row" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM dr_event_rcv_tbl 
+		WHERE event_status = 'active'
+			and meter_ctl_snd_date is null
+		ORDER BY start_date desc
+	</select>
+	<!-- 제어 정보 전송을 위한 이벤트 참여 기기 정보 조회    -->
+	<select id="ctlEvent_2_list" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT device_id, optin, 'off' device_on_off
+		FROM dr_cust_meter_tbl
+		WHERE  optin = 'Y'
+	</select>
+</mapper>

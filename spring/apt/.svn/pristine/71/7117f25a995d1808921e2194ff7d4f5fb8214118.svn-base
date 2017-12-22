@@ -1,0 +1,115 @@
+package net.ion.oadr2.service.impl;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import net.ion.oadr2.specification.Profile;
+import net.ion.oadr2.specification.Profile.Resource;
+import net.ion.oadr2.specification.Profile.Version;
+import net.ion.open.oadr2.xmpp.JAXBManager;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Service;
+
+
+@Service
+public class Lookup implements ApplicationContextAware{
+
+	private static final Map<String,Class[]> mapping = new LinkedHashMap<String,Class[]>();
+
+	private Map<String,Profile> profile_a = new HashMap<String,Profile>();
+	private Map<String,Profile> profile_b = new HashMap<String,Profile>();
+
+	public static final String OADR20A_PACKAGE = net.ion.open.oadr2.model.ObjectFactory.class.getPackage().getName();
+	public static final String OADR20B_PACKAGE = net.ion.open.oadr2.model.v20b.ObjectFactory.class.getPackage().getName();
+
+	static{
+		mapping.put(Profile.Resource.EiEvent.name(),
+			new Class[]{
+				net.ion.open.oadr2.model.OadrDistributeEvent.class,
+				net.ion.open.oadr2.model.v20b.OadrDistributeEvent.class
+
+		});
+
+		mapping.put(Profile.Resource.EiOpt.name(),
+			new Class[]{
+			net.ion.open.oadr2.model.v20b.OadrCreatedOpt.class,
+			net.ion.open.oadr2.model.v20b.OadrCanceledOpt.class,
+			net.ion.open.oadr2.model.v20b.OadrCancelOpt.class
+		});
+
+		mapping.put(Profile.Resource.EiRegisterParty.name(),
+			new Class[]{
+			net.ion.open.oadr2.model.v20b.OadrCreatedPartyRegistration.class,
+			net.ion.open.oadr2.model.v20b.OadrCanceledPartyRegistration.class,
+			net.ion.open.oadr2.model.v20b.OadrCancelPartyRegistration.class,
+			net.ion.open.oadr2.model.v20b.OadrRequestReregistration.class
+		});
+
+		mapping.put(Profile.Resource.OadrPoll.name(),
+			new Class[]{
+				//some class
+		});
+		
+		mapping.put(Profile.Resource.EiReport.name(),
+			new Class[]{
+			net.ion.open.oadr2.model.v20b.OadrRegisteredReport.class,
+			net.ion.open.oadr2.model.v20b.OadrCreatedReport.class,
+			net.ion.open.oadr2.model.v20b.OadrUpdatedReport.class,
+			net.ion.open.oadr2.model.v20b.OadrCanceledReport.class,
+			net.ion.open.oadr2.model.v20b.OadrRegisterReport.class,
+			net.ion.open.oadr2.model.v20b.OadrCreateReport.class,
+			net.ion.open.oadr2.model.v20b.OadrCancelReport.class,
+		});
+
+	}
+
+
+	public Profile getHandler(Profile.Version type, Resource function){
+		return (type == Version.v20a ? profile_a : profile_b).get(function.name());
+	}
+
+	public Resource getEndpoint(Object payload){
+		for(String suffix : mapping.keySet()){
+			for (Class clazz : mapping.get(suffix)) {
+				if(clazz == payload.getClass()){
+					return Resource.valueOf(suffix);
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
+	}
+
+
+	public static Marshaller getMarshaller(Object payload) throws JAXBException{
+		Marshaller marshaller = null;
+		if(payload.getClass().getPackage().getName().startsWith(OADR20B_PACKAGE)){
+			marshaller = new net.ion.open.oadr2.xmpp.v20b.JAXBManager().createMarshaller();
+		}else{
+			marshaller = new JAXBManager().createMarshaller();
+		}
+
+		return marshaller;
+	}
+	public static JAXBManager getJAXBManager(Object payload) throws JAXBException{
+		JAXBManager jaxbManager = null;
+		if(payload.getClass().getPackage().getName().startsWith(OADR20B_PACKAGE)){
+			jaxbManager = new net.ion.open.oadr2.xmpp.v20b.JAXBManager();
+		}else{
+			jaxbManager = new JAXBManager();
+		}
+		return jaxbManager;
+	}
+
+}

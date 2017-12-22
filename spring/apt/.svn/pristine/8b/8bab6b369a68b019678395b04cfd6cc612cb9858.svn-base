@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="weather">
+	<select id="list_1" useCache="true" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT *
+		FROM dr_weather_tbl
+		WHERE kma_zone = #{kma_zone}
+		ORDER BY wtime
+	</select>
+
+   	<update id="insert_1" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap">
+		INSERT INTO dr_weather_tbl (
+			kma_zone,
+			gridx,
+			gridy,
+			wtime,		
+			temp,
+			sky,
+			pty,
+			wfkor,
+			wfen,
+			pop,
+			reh,
+			ws,
+			wd,
+			wdkor,
+			wden		 
+		)
+		VALUES(
+			#{kma_zone},
+			#{gridx},
+			#{gridy},
+			#{wtime},		
+			#{temp},
+			#{sky},
+			#{pty},
+			#{wfkor},
+			#{wfen},
+			#{pop},
+			#{reh},
+			#{ws},
+			#{wd},
+			#{wdkor},
+			#{wden}			
+		)
+		ON DUPLICATE KEY UPDATE
+			temp = #{temp},
+			sky = #{sky},
+			pty = #{pty},
+			wfkor = #{wfkor},
+			wfen = #{wfen},
+			pop = #{pop},
+			reh = #{reh},
+			ws = #{ws},
+			wd =#{wd},
+			wdkor = #{wdkor},
+			wden = #{wden}
+	</update>
+	
+	<select id="mainGraph_1_rows" useCache="true" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT CONCAT( addr_sido, ' ', addr_gu, ' ', addr_dong) AS kma_name, wtime, 
+			date_format(wea.wtime, '%H') AS wtime_hour, wea.temp, wea.wfkor, wea.wfen,
+			IF ( DATE(now()) = DATE(wtime), 'true', 'false') AS istoday,
+			CASE wea.sky + wea.pty
+				WHEN 1 THEN 'day-sunny'
+				WHEN 2 THEN 'cloud'
+				WHEN 3 THEN 'cloudy'
+				WHEN 4 THEN 'fog'
+				WHEN 5 THEN 'rain'
+				WHEN 6 THEN 'snow'
+			END AS wicon 
+		FROM
+			dr_cust_tbl AS cust
+		INNER JOIN dr_weather_tbl AS wea 
+		ON cust.kma_zone = wea.kma_zone 
+		AND wea.wtime BETWEEN DATE_SUB(now(), INTERVAL 2 HOUR)
+		AND DATE_ADD(now(), INTERVAL 24 HOUR)
+		ORDER BY wtime
+		LIMIT 0, 8;
+	</select>
+	
+	<select id="mainIcon_1_#row" useCache="true" parameterType="org.apache.commons.collections.map.CaseInsensitiveMap" resultType="kr.or.voj.webapp.utils.DefaultLowerCaseMap">
+		SELECT temp, sky + pty w_icon, wfkor, addr_gu, addr_dong
+		FROM dr_weather_tbl a, dr_cust_tbl b 
+		WHERE  
+		a.kma_zone = b.kma_zone AND wtime > DATE_SUB(now(), INTERVAL 1 HOUR)
+		ORDER BY wtime 
+		LIMIT 0,1
+	</select>
+		
+</mapper>

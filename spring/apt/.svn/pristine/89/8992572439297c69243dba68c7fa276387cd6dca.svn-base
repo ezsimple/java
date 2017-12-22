@@ -1,0 +1,66 @@
+package kr.or.voj.webapp.utils;/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+import kr.or.voj.quartz.job.DrProperties;
+import kr.or.voj.webapp.processor.ProcessorServiceFactory;
+import org.thymeleaf.util.StringUtils;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+/**
+ *
+ * @author jcbae
+ */
+public class JCEUtils {
+
+    private static DrProperties drProperties = (DrProperties) ProcessorServiceFactory.getBean(DrProperties.class);
+    private static String secretKey = drProperties.SECRET_KEY;
+    private static Boolean secretEnable = Boolean.valueOf(drProperties.SECRET_ENABLE);
+
+    /**
+     * @param args the command line arguments
+     */
+   public static String encrypt(String plainText, final String secretKey) throws Exception {
+        SecretKeySpec skeySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
+        String iv = secretKey.substring(0, 16);
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, new IvParameterSpec(iv.getBytes()));
+        byte[] encrypt = cipher.doFinal(plainText.getBytes("utf-8"));
+        String strEncrypt = ByteUtils.toHexString(encrypt);
+        return strEncrypt;
+    }
+
+    public static String encrypt(String plainText) throws Exception {
+        return (secretEnable?encrypt(plainText,secretKey):plainText);
+    }
+
+    public static String decrypt(String strEncrypt, final String secretKey) throws Exception {
+        if(StringUtils.isEmpty(strEncrypt)) return strEncrypt;
+        SecretKeySpec skeySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
+        String iv = secretKey.substring(0, 16);
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, skeySpec, new IvParameterSpec(iv.getBytes()));
+        byte[] decrypt = cipher.doFinal(ByteUtils.toBytesFromHexString(strEncrypt));
+        String plainText = new String(decrypt, "utf-8");
+        return plainText;
+    }
+
+    public static String decrypt(String strEncrypt) throws Exception {
+        return (secretEnable?decrypt(strEncrypt, secretKey):strEncrypt);
+    }
+
+//    public static void main(String[] args) throws Exception {
+//        String secretKey="4cbfebfb106fdb16bdb1ca9500d7d827";
+//        String plainText = "Hello I-ON";
+//        System.out.println("plainText : "+plainText);
+//        String strEncrypt = encrypt(plainText);
+//        System.out.println("strEncrypt : "+strEncrypt);
+//        String strDecrypt = decrypt(strEncrypt);
+//        System.out.println("strDecrypt : "+strDecrypt);
+//    }
+}

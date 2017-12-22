@@ -1,0 +1,93 @@
+package kr.or.voj.quartz.job;
+
+import kr.or.voj.webapp.processor.ProcessorServiceFactory;
+import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.log4j.Logger;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.scheduling.quartz.QuartzJobBean;
+
+import java.security.InvalidKeyException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+
+public abstract class ScheduleImpJob extends QuartzJobBean implements ScheduleService {
+	protected static final Logger logger = Logger.getLogger(ScheduleImpJob.class);
+	protected static SimpleDateFormat defFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	protected static SimpleDateFormat gtmFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	protected String fileId = null;
+	private boolean isRun = false;
+	private String name = null;
+	
+	protected DrProperties drProperties;
+	public void setDrProperties(DrProperties drProperties) {
+		this.drProperties = drProperties;
+	}
+
+	@Override
+	protected void executeInternal(JobExecutionContext ctx) throws JobExecutionException {
+		if(isRun) {
+			return;
+		}
+		isRun = true;
+		fileId = null;
+		
+		CaseInsensitiveMap params = new CaseInsensitiveMap();
+		
+		if(name==null){
+			name = ctx.getJobDetail().getKey().getName();
+			params.put("scd_id", name);
+			params.put("scd_name", ctx.getJobDetail().getDescription() + ".");
+			
+			try {
+				params.put("scd_str_dt", new Date());
+				ProcessorServiceFactory.executeQuery("drApi", "shcInsert", params);
+			} catch (Exception e2) {
+				logger.error("스케쥴 처리중 오류", e2);
+			}
+		}
+		
+		//DB처리
+		try {
+			params.put("scd_str_dt", new Date());
+			params.put("file_id", "");
+			ProcessorServiceFactory.executeQuery("drApi", "schStart", params);
+		} catch (Exception e2) {
+			logger.error("스케쥴 처리중 오류", e2);
+		}
+
+		try {
+			executeJob(ctx);			
+		} catch (Exception e) {
+			if ((e instanceof ConnectTimeoutException || e instanceof InvalidKeyException))
+				logger.error(e.getMessage());
+			else
+				logger.error("스케쥴 처리중 오류", e);
+			//DB처리
+			try {
+				params.put("file_id", fileId);
+				params.put("err_dt", new Date());
+				params.put("err_msg", e.toString());
+				ProcessorServiceFactory.executeQuery("drApi", "schError", params);
+			} catch (Exception e2) {
+				logger.error("스케쥴 처리중 오류", e2);
+			}
+		}finally{
+			//DB처리
+			try {
+				params.put("scd_end_dt", new Date());
+				params.put("file_id", fileId);
+				ProcessorServiceFactory.executeQuery("drApi", "schEnd", params);
+			} catch (Exception e2) {
+				logger.error("스케쥴 처리중 오류", e2);
+			}
+			isRun = false;
+		}
+	}
+
+	public void executeJob(JobExecutionContext ctx) throws Exception {
+		executeInternal(ctx);
+	}
+}

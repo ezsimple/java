@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>/WEB-INF/config/islim.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<util:properties id="dr" location="classpath:../config/dr.properties" />
+	<bean id="drProperties" class="kr.or.voj.quartz.job.DrProperties">
+		<property name="template" value="/WEB-INF/template" />
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean" destroy-method="destroy">
+		<property name="triggers">
+			<list>
+				<ref bean="oadEventJobTrigger" />
+				<ref bean="oismartRcvJobTrigger" />
+				<ref bean="cBLRcvJobTrigger" />
+<!-- 				<ref bean="smartMeterSndJobTrigger" /> -->
+				<ref bean="eventCtlData2IOEmJobTrigger" />
+				<ref bean="weatherSyncJobTrigger" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- Quartz - Cron Trigger Setting -->
+	<!-- 1: Seconds (0–59), 2: Minutes (0–59), 3: Hours (0–23), 4: Day of month (1–31), 5: Month (1–12 or JAN–DEC), 6: Day of week (1–7 or SUN–SAT), 7: Year (1970–2099), *:는 all, ?는 설정하지 않음 0 0 0 * * ? 매일 오전 12시에 실행 0 0 0 1 * ? 매월 1일 오전 12시에 실행 0 0 0 ? ? 1 ? 매주 일요일 오전 12시에 실행 -->
+	<!-- ************* 테스트 employee XML 연동 ************* -->
+
+	<bean id="oadEventJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="oadEventJob" />
+		<property name="cronExpression" value="0/30 * * * * ?" />
+	</bean>
+	<bean name="oadEventJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="description" value="OpenADR Event 수신" />
+		<property name="jobClass" value="kr.or.voj.quartz.job.OpenAdrEventRcvJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="drProperties" value-ref="drProperties"/>
+			</map>
+		</property>
+	</bean>
+	<!-- ismater 전력사용량 -->
+	<bean id="oismartRcvJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="ismartRcvJob" />
+		<property name="cronExpression" value="0 3,13,23,33,43,53 * * * ?" />
+	</bean>
+	<bean name="ismartRcvJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="description" value="ismater 전력사용량" />
+		<property name="jobClass" value="kr.or.voj.quartz.job.IsmartRcvJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="drProperties" value-ref="drProperties"/>
+			</map>
+		</property>
+	</bean>
+	<!-- CBL -->
+	<bean id="cBLRcvJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="cBLRcvJob" />
+		<property name="cronExpression" value="0 3,13,23,33,43,53 * * * ?" />
+	</bean>
+	<bean name="cBLRcvJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="description" value="ismater CBL" />
+		<property name="jobClass" value="kr.or.voj.quartz.job.CBLRcvJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="drProperties" value-ref="drProperties"/>
+			</map>
+		</property>
+	</bean>
+	
+	<!-- SmartMeter -->
+	<bean id="smartMeterSndJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="smartMeterSndJob" />
+		<property name="cronExpression" value="0 3,13,23,33,43,53 * * * ?" />
+	</bean>
+	<bean name="smartMeterSndJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="description" value="SmartMeter 전력사용량 전송" />
+		<property name="jobClass" value="kr.or.voj.quartz.job.SmartMeterSndJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="drProperties" value-ref="drProperties"/>
+			</map>
+		</property>
+	</bean>
+	
+	<!-- Control SmartMeter -->
+	<bean id="eventCtlData2IOEmJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="eventCtlData2IOEmJob" />
+		<property name="cronExpression" value="0,30 * * * * ?" />
+	</bean>
+	<bean name="eventCtlData2IOEmJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="description" value="SmartMeter 제어정보 전송" />
+		<property name="jobClass" value="kr.or.voj.quartz.job.EventCtlData2IOEmJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="drProperties" value-ref="drProperties"/>
+			</map>
+		</property>
+	</bean>
+	
+	<!-- 1시간 단위 날씨 -->
+	<bean id="weatherSyncJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="weatherSyncJob" />
+		<property name="cronExpression" value="0 0,15,30,45 * * * ?" />
+	</bean>
+	<bean name="weatherSyncJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="description" value="날씨정보 수신" />
+		<property name="jobClass" value="kr.or.voj.quartz.job.WeatherSyncJob" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="drProperties" value-ref="drProperties"/>
+			</map>
+		</property>
+	</bean>	
+	
+
+</beans>

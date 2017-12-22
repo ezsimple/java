@@ -1,0 +1,152 @@
+package kr.or.voj.webapp.controller.rest;
+
+import kr.or.voj.webapp.processor.ProcessorServiceFactory;
+import kr.or.voj.webapp.service.apt.AptPowerConsumeGatheringImpl;
+import net.sf.json.JSONObject;
+import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+public class RestfulController {
+	protected static final Logger LOGGER = Logger.getLogger(RestfulController.class);
+
+	@RequestMapping(value = "/dr/{resource}", method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> create(HttpServletRequest request, HttpServletResponse response, @PathVariable("resource") String resource) {
+		String actionFormat = "%sCreate";
+		String action = String.format(actionFormat, resource);
+		Map<String, Object> result = new HashMap<String, Object>();		
+		LOGGER.info("[Start]  POST " + resource  + " : data = " + JSONObject.fromObject(request.getParameterMap()));
+		
+		try {
+			List<String> processorList = new ArrayList<String>();
+			processorList.add("mybatis");
+			
+			result = ProcessorServiceFactory.executeMainTransaction(processorList, new CaseInsensitiveMap(), "drApi", action, null, request, response);			
+			result.put("success", true);
+			LOGGER.info("[Sucess] POST " + resource + " : " + result);
+		} catch (Exception e) {
+			result.put("error_message", e.toString());
+			result.put("status", 500);
+			result.put("success", false);
+			response.setStatus(500);
+			LOGGER.error("[Error]  POST " + resource + " : " + e.toString(), e);
+		}
+		
+		LOGGER.info("[End]    POST " + resource + " : ");
+		return result;
+	}
+
+	@RequestMapping(value = "/dr/{resource}", method=RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> search(HttpServletRequest request, HttpServletResponse response, @PathVariable("resource") String resource) {
+		String actionFormat = "%sSearch";
+		String action = String.format(actionFormat, resource);
+		Map<String, Object> result = new HashMap<String, Object>();		
+		LOGGER.info("[Start]  GET " + resource + " : data = " + JSONObject.fromObject(request.getParameterMap()));
+		int size = -1;
+		try {
+			List<String> processorList = new ArrayList<String>();
+			processorList.add("mybatis");
+			
+			CaseInsensitiveMap params = new CaseInsensitiveMap();
+
+			Map<String, Object> resultSet = null;
+			resultSet = ProcessorServiceFactory.executeMainTransaction(processorList, params, "drApi", action, null, request, response);			
+			if(resultSet.size()==1){
+				for(String key : resultSet.keySet()){
+					Object list = resultSet.get(key);
+					result.put("list", list);
+					if (list instanceof List) {
+						List l = (List) list;
+						size = l.size();
+						LOGGER.info("[Sucess] GET " + resource + " : Result size = " + size);
+					}else if (list instanceof Map) {
+						Map l = (Map) list;
+						LOGGER.info("[Sucess] GET " + resource + " : data = " + JSONObject.fromObject(l));
+					}else{
+						LOGGER.info("[Sucess] GET " + resource + " : Result size = " + size);
+					}
+				}
+			}else{
+				result.putAll(resultSet);
+				LOGGER.info("[Sucess] GET " + resource + " : Result size = -" + size);
+			}
+			result.put("success ", true);
+		} catch (Exception e) {
+			result.put("error_message", e.toString());
+			result.put("status", 500);
+			result.put("success", false);
+			response.setStatus(500);
+			LOGGER.error("[Error]  GET " + resource + " : " + e.toString(), e);
+		}
+		
+		LOGGER.info("[End]    GET " + resource);
+		return result;
+	}
+
+    @Autowired
+    private AptPowerConsumeGatheringImpl aptPowerConsume;
+
+	@RequestMapping(value = "/dr/{resource}", method=RequestMethod.PUT)
+	@ResponseBody
+	public Map<String, Object> put(HttpServletRequest request, HttpServletResponse response, @PathVariable("resource") String resource) {
+		String actionFormat = "%sCreate";
+		String action = String.format(actionFormat, resource);
+		Map<String, Object> result = new HashMap<String, Object>();
+//		LOGGER.info("[Start] PUT " + resource  + " : data = " + JSONObject.fromObject(request.getParameterMap()));
+
+		byte[] xmlData = new byte[request.getContentLength()];
+		try {
+			InputStream sis = request.getInputStream();
+			BufferedInputStream bis = new BufferedInputStream(sis);
+			bis.read(xmlData, 0, xmlData.length);
+			String xml;
+			if (request.getCharacterEncoding() != null) {
+				xml = new String(xmlData, request.getCharacterEncoding());
+			} else {
+				xml = new String(xmlData);
+			}
+            aptPowerConsume.save(xml);
+//			List<String> processorList = new ArrayList<String>();
+//			processorList.add("mybatis");
+//			result = ProcessorServiceFactory.executeMainTransaction(processorList, new CaseInsensitiveMap(), "drApi", action, null, request, response);
+			LOGGER.info("[Start] PUT "+xml);
+		} catch (Exception e) {
+            e.printStackTrace();
+        }
+
+//		try {
+//			List<String> processorList = new ArrayList<String>();
+//			processorList.add("mybatis");
+//			result = ProcessorServiceFactory.executeMainTransaction(processorList, new CaseInsensitiveMap(), "drApi", action, null, request, response);
+//			result.put("success", true);
+//			LOGGER.info("[Sucess] POST " + resource + " : " + result);
+//		} catch (Exception e) {
+//			result.put("error_message", e.toString());
+//			result.put("status", 500);
+//			result.put("success", false);
+//			response.setStatus(500);
+//			LOGGER.error("[Error]  POST " + resource + " : " + e.toString(), e);
+//		}
+
+		LOGGER.info("[End] PUT " + resource + " : ");
+		return result;
+	}
+
+}

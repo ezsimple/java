@@ -1,0 +1,120 @@
+package kr.or.voj.quartz.job;
+
+import kr.or.voj.webapp.processor.ProcessorServiceFactory;
+import kr.or.voj.webapp.utils.JCEUtils;
+import kr.or.voj.webapp.utils.OadrHttpUtils;
+import kr.or.voj.webapp.utils.RepositoryUtils;
+import kr.or.voj.webapp.utils.TimeUtils;
+import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.quartz.JobExecutionContext;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+public class SmartMeterSndJob extends ScheduleImpJob {
+	private static final Logger logger = Logger.getLogger(SmartMeterSndJob.class);
+	private static DrProperties drProperties = (DrProperties)ProcessorServiceFactory.getBean(DrProperties.class);
+	private static SimpleDateFormat defFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static SimpleDateFormat gtmFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+	public void executeJob(JobExecutionContext arg0) throws Exception {		
+		
+		logger.info("IoE.m 수신 자료 LA에 전송 시작");
+		run();
+		
+		logger.info("IoE.m 수신 자료 LA에 전송 완료");
+	}
+	protected void run() throws Exception {
+		File file = null;
+		File sndFile = null;
+
+		try {
+			StringBuffer sb = new StringBuffer();
+
+			String sndXml = FileUtils.readFileToString(new File(drProperties.getTemplateRoot() + drProperties.TEMPLA_SMARTMETER_SEND));
+
+			String xml = StringUtils.substringBefore(sndXml, "__PART__");
+			String interval = StringUtils.substringAfter(sndXml, "__PART__");
+
+			//전송 데이타 생성
+			Map<String, List<Map<String, Object>>> rowSet = (Map<String, List<Map<String, Object>>>) ProcessorServiceFactory.executeQuery("drApi", "sendPower", new CaseInsensitiveMap());
+			int i = 0;
+
+			for (Map<String, Object> row : rowSet.get("rows")) {
+				String str = interval;
+				String measureDate = (String) row.get("measure_date");
+				Date date = defFormat.parse(measureDate);
+				measureDate = TimeUtils.getGTMDate(date);
+
+				str = StringUtils.replace(str, "${measure_date}", measureDate);
+				str = StringUtils.replace(str, "${idx}", Integer.toString(i));
+				str = StringUtils.replace(str, "${power_consumption}", row.get("power_consumption").toString());
+				str = StringUtils.replace(str, "${meterid}", JCEUtils.encrypt(drProperties.METERID));
+				i++;
+				sb.append(str);
+			}
+
+			xml = StringUtils.replace(xml, "${intervals}", sb.toString());
+			xml = StringUtils.replace(xml, "${req_id}", UUID.randomUUID().toString());
+			xml = StringUtils.replace(xml, "${venId}", JCEUtils.encrypt(drProperties.VEN_ID));
+			xml = StringUtils.replace(xml, "${reportid_venId}", JCEUtils.encrypt("ReportID_" + drProperties.VEN_ID));
+			xml = StringUtils.replace(xml, "${reportrequestid_venId}", JCEUtils.encrypt("ReportRequestID_" + drProperties.VEN_ID));
+			xml = StringUtils.replace(xml, "${reportspecifierid_venId}", JCEUtils.encrypt("ReportSpecifierID_" + drProperties.VEN_ID));
+			xml = StringUtils.replace(xml, "${send_date}", TimeUtils.getGTMDate(new Date()));
+			xml = StringUtils.replace(xml, "${intervals}", sb.toString());
+
+			sndFile = File.createTempFile("event_", ".xml");
+			FileUtils.writeStringToFile(sndFile, xml);
+			//송신파일 저장소에 저장
+			fileId = RepositoryUtils.save("SMETER_SND", sndFile);
+			String report = FileUtils.readFileToString(sndFile);
+			logger.debug(report);
+			//수신임시파일
+			file = File.createTempFile("event_", ".xml");
+			//자료 수신
+			OadrHttpUtils.pull(drProperties.VTN_ADDERSS_SMAMTMETER_POWER, xml, file);
+			//저장소에 저장
+			fileId = RepositoryUtils.save("SMETER_RCV", file);
+			logger.info("IoE.m 수신 자료 LA에 전송 : " + fileId);
+
+			String result = FileUtils.readFileToString(file);
+			// logger.debug(result);
+
+			if (!StringUtils.contains(result, "responseCode>200<")) {
+				throw new Exception("송신 후 결과값이 실패 상태로 반환되었습니다.");
+			}
+
+		}finally{
+			if(file!=null){ 
+				try {
+					file.delete();
+				} catch (Exception e2) {
+					// TODO: handle exception
+				}
+			}
+		}
+	}
+	
+	public static String getDateGMT(String time)throws Exception {
+		gtmFormat.setCalendar(new GregorianCalendar(new SimpleTimeZone(0, "GMT")));
+		Date date = gtmFormat.parse(time);
+
+		//System.out.println(time);
+		//System.out.println(defFormat.format(date));
+		return defFormat.format(date);
+	}
+	public static String getDate(String time)throws Exception {
+		time = StringUtils.substringBefore(time, "+");
+		time = StringUtils.replace(time, "T", " ");
+		
+		return time;
+	}
+	public static String getGTMDate(Date date)throws Exception {
+		return gtmFormat.format(date);
+	}
+	
+}
